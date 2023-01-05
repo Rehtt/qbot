@@ -1,0 +1,92 @@
+/**
+ * Copyright (c) 2023 Rehtt
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+/**
+ * @Author: Rehtt <dsreshiram@gmail.com>
+ * @Date: 2023/1/1 12:27
+ */
+
+package cqhttp_bot
+
+import (
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
+	"strings"
+	"time"
+)
+
+// GenCode 生成唯一编码
+func GenCode(data []byte) string {
+	s := sha256.New()
+	s.Write(data)
+	s.Write([]byte(time.Now().String()))
+
+	var tmp = make([]byte, 20)
+	rand.Read(tmp)
+	s.Write(tmp)
+
+	return base64.StdEncoding.EncodeToString(s.Sum(nil))
+}
+
+func ParseMessage(raw string) (m []Message) {
+	var index int
+	for {
+		index = strings.Index(raw, "[CQ:")
+		if index > 0 {
+			m = append(m, TextMessage(raw[:index]))
+			raw = raw[index:]
+		} else if index == 0 {
+			feet := strings.Index(raw, "]")
+			if feet == -1 {
+				m = append(m, TextMessage(raw))
+				break
+			}
+			cq := strings.Split(raw[:feet], ",")
+			switch cq[0] {
+			case "[CQ:image":
+				m = append(m, ImageMessage(cq[1][5:], cq[3][4:]))
+			}
+			raw = raw[feet+1:]
+		} else if index == -1 {
+			if raw != "" {
+				m = append(m, TextMessage(raw))
+			}
+			break
+		}
+	}
+	return
+}
+
+func TextMessage(text string) Message {
+	return Message{
+		Type: TEXT,
+		Text: text,
+	}
+}
+func ImageMessage(file, url string) Message {
+	return Message{
+		Type: IMAGE,
+		Url:  url,
+		File: file,
+	}
+}
