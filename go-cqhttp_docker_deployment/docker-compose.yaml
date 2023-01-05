@@ -1,0 +1,13 @@
+version: "3.8"
+services:
+  go_cqhttp:
+    build: ./
+    container_name: go_cqhttp
+    ports:
+      - "8080:8080"
+      - "5700:5700"
+    volumes:
+      - /docker-data/bot:/bot
+    restart: always
+    environment:
+      TZ: 'Asia/Shanghai'
