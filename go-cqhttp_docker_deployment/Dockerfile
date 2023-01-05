@@ -8,8 +8,9 @@ WORKDIR /build
 
 RUN set -ex  \
     && sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories \
-    && apk add --no-cache git \
-    && git clone -b v1.0.0-rc3 --depth=1 https://github.com/Mrs4s/go-cqhttp.git \
+    && apk add --no-cache git jq curl  \
+    && latest=$(curl https://api.github.com/repos/Mrs4s/go-cqhttp/releases/latest | jq -r '.tag_name') \
+    && git clone -b ${latest} --depth=1 https://github.com/Mrs4s/go-cqhttp.git \
     && cd go-cqhttp \
     && go build -ldflags "-s -w -extldflags '-static'" -o cqhttp
 
