@@ -47,46 +47,13 @@ func GenCode(data []byte) string {
 
 	return base64.StdEncoding.EncodeToString(s.Sum(nil))
 }
-
-func ParseMessage(raw string) (m []Message) {
-	var index int
-	for {
-		index = strings.Index(raw, "[CQ:")
-		if index > 0 {
-			m = append(m, TextMessage(raw[:index]))
-			raw = raw[index:]
-		} else if index == 0 {
-			feet := strings.Index(raw, "]")
-			if feet == -1 {
-				m = append(m, TextMessage(raw))
-				break
-			}
-			cq := strings.Split(raw[:feet], ",")
-			switch cq[0] {
-			case "[CQ:image":
-				m = append(m, ImageMessage(cq[1][5:], cq[3][4:]))
-			}
-			raw = raw[feet+1:]
-		} else if index == -1 {
-			if raw != "" {
-				m = append(m, TextMessage(raw))
-			}
-			break
+func parse(raw string) (out map[string]string) {
+	out = make(map[string]string)
+	for _, r := range strings.Split(raw, ",") {
+		s := strings.SplitN(r, "=", 2)
+		if len(s) == 2 {
+			out[s[0]] = s[1]
 		}
 	}
 	return
-}
-
-func TextMessage(text string) Message {
-	return Message{
-		Type: TEXT,
-		Text: text,
-	}
-}
-func ImageMessage(file, url string) Message {
-	return Message{
-		Type: IMAGE,
-		Url:  url,
-		File: file,
-	}
 }

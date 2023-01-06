@@ -48,8 +48,8 @@ const (
 
 type Msg struct {
 	MessageType EventMessageType `json:"message_type"`
-	UserId      int64            `json:"user_id"`
-	GroupId     int64            `json:"group_id"`
+	UserId      any              `json:"user_id"`
+	GroupId     any              `json:"group_id"`
 	Message     string           `json:"message"`
 	AutoEscape  *bool            `json:"auto_escape,omitempty"` // 消息内容是否作为纯文本发送 ( 即不解析 CQ 码 ) , 只在 message 字段是字符串时有效
 }
@@ -61,13 +61,25 @@ type EventMessage struct {
 type MessageType uint8
 
 const (
-	TEXT = MessageType(iota)
+	TEXT = MessageType(iota) + 1
 	IMAGE
+	Reply
+	At
 )
 
+type Messages []Message
 type Message struct {
-	Type MessageType
-	Url  string
-	File string
-	Text string
+	Type  MessageType
+	Image *messageImage
+	At    *messageAt
+	Text  string
+}
+type messageImage struct {
+	Url   string
+	File  string
+	Flash bool
+}
+type messageAt struct {
+	Qid  any
+	Name string // 当在群中找不到此QQ号的名称时才会生效
 }

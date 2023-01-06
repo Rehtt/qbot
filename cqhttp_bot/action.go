@@ -66,21 +66,28 @@ func (b *Action) action(action string, data any) (jsoniter.Any, error) {
 }
 
 // GetFriendsList 获取好友列表
-func (b *Action) GetFriendsList() ([]*Friend, error) {
+func (b *Action) GetFriendsList() ([]Friend, error) {
 	data, err := b.action("get_friend_list", nil)
 	if err != nil {
 		return nil, err
 	}
-	var fs []*Friend
+	var fs []Friend
 	data.ToVal(&fs)
 	return fs, nil
 }
 
 // SendMsg 发送消息
-func (b *Action) SendMsg(qid int64, msg string, ty EventMessageType, autoEscape ...bool) error {
+//
+// @param qid	目标，私聊为对方qq号，群聊为群号
+// @param msg	消息
+// @param ty	消息类型，私聊为Private，群聊为Group
+//
+// @return id	消息id
+// @return error
+func (b *Action) SendMsg(qid any, msg []Message, ty EventMessageType, autoEscape ...bool) (int32, error) {
 	m := Msg{
 		MessageType: ty,
-		Message:     msg,
+		Message:     EncodingMessage(msg),
 	}
 	switch ty {
 	case Private:
@@ -91,10 +98,25 @@ func (b *Action) SendMsg(qid int64, msg string, ty EventMessageType, autoEscape 
 	if len(autoEscape) > 0 {
 		m.AutoEscape = &autoEscape[0]
 	}
-	_, err := b.action("send_msg", m)
-	return err
+	response, err := b.action("send_msg", m)
+	if err != nil {
+		return 0, err
+	}
+	return response.Get("message_id").ToInt32(), nil
 }
 
-func (b *Action) SendPrivateMsg(userId int64, msg string) error {
-	return b.SendMsg(userId, msg, Private)
+func (b *Action) SendPrivateMsg(userId int64, msg string) (int32, error) {
+	return b.SendMsg(userId, []Message{{
+		Type: TEXT,
+		Text: msg,
+	}}, Private)
+}
+func (b *Action) GetMsg(messageId string) (message *Message, err error) {
+	data, err := b.action("get_msg", map[string]any{
+		"message_id": messageId,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &ParseMessage(data.Get("message").ToString())[0], nil
 }

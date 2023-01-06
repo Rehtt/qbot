@@ -4,3 +4,9 @@
 
 
 [go-cqhttp docker部署](https://github.com/Rehtt/qbot/tree/master/go-cqhttp_docker_deployment)
+
+
+### TODO
+1、完善cqhttp_bot
+
+2、使用rust编写go-cqhttp客户端库 (搁置一个月)
