@@ -31,10 +31,10 @@ import (
 func TestNew(t *testing.T) {
 	b := New("ws://127.0.0.1:8080")
 	fmt.Println(b.GetFriendsList())
-	b.Event.OnGroupMessage(func(senderQid, groupId int64, message *EventMessage) {
+	b.Event.OnGroupMessage(func(messageId int32, senderQid, groupId int64, message *EventMessage) {
 		fmt.Println(senderQid, groupId, message.Messages, message.RawMessage)
 	})
-	b.OnPrivateMessage(func(userId int64, message *EventMessage) {
+	b.OnPrivateMessage(func(messageId int32, userId int64, message *EventMessage) {
 		fmt.Println(userId, message.Messages, message.RawMessage)
 	})
 	b.SendMsg(852122585, MessageArray(TextMessage("test")), Group)

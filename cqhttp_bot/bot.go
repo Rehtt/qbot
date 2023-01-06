@@ -40,9 +40,6 @@ type Bot struct {
 }
 
 // New 实例化一个Bot对象
-/*
-	b :=
-*/
 func New(addr string) (b *Bot) {
 	b = new(Bot)
 	conn, _, err := websocket.DefaultDialer.Dial(addr, nil)

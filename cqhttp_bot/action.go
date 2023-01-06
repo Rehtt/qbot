@@ -84,10 +84,10 @@ func (b *Action) GetFriendsList() ([]Friend, error) {
 //
 // @return id	消息id
 // @return error
-func (b *Action) SendMsg(qid any, msg []Message, ty EventMessageType, autoEscape ...bool) (int32, error) {
+func (b *Action) SendMsg(qid any, msg Messages, ty EventMessageType, autoEscape ...bool) (int32, error) {
 	m := Msg{
 		MessageType: ty,
-		Message:     EncodingMessage(msg),
+		Message:     msg.RawMessage(),
 	}
 	switch ty {
 	case Private:
@@ -106,11 +106,10 @@ func (b *Action) SendMsg(qid any, msg []Message, ty EventMessageType, autoEscape
 }
 
 func (b *Action) SendPrivateMsg(userId int64, msg string) (int32, error) {
-	return b.SendMsg(userId, []Message{{
-		Type: TEXT,
-		Text: msg,
-	}}, Private)
+	return b.SendMsg(userId, MessageArray(TextMessage(msg)), Private)
 }
+
+// GetMsg 根据message_id获取消息
 func (b *Action) GetMsg(messageId string) (message *Message, err error) {
 	data, err := b.action("get_msg", map[string]any{
 		"message_id": messageId,
@@ -119,4 +118,37 @@ func (b *Action) GetMsg(messageId string) (message *Message, err error) {
 		return nil, err
 	}
 	return &ParseMessage(data.Get("message").ToString())[0], nil
+}
+
+func (b *Action) SetFriendAddRequest(flag string, approve bool, remark ...string) error {
+	var tmp = struct {
+		Flag    string `json:"flag"`
+		Approve bool   `json:"approve"`
+		Remark  string `json:"remark,omitempty"` // 备注
+	}{
+		Flag:    flag,
+		Approve: approve,
+	}
+	if len(remark) != 0 {
+		tmp.Remark = remark[0]
+	}
+	_, err := b.action("set_friend_add_request", tmp)
+	return err
+}
+func (b *Action) SetGroupAddRequest(flag string, subType GroupRequestEventSubType, approve bool, reason ...string) error {
+	var tmp = struct {
+		Flag    string                   `json:"flag"`
+		Approve bool                     `json:"approve"`
+		Reason  string                   `json:"reason,omitempty"` // 拒绝理由
+		SubType GroupRequestEventSubType `json:"sub_type"`
+	}{
+		Flag:    flag,
+		Approve: approve,
+		SubType: subType,
+	}
+	if len(reason) != 0 {
+		tmp.Reason = reason[0]
+	}
+	_, err := b.action("set_group_add_request", tmp)
+	return err
 }

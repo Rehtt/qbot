@@ -26,27 +26,22 @@ import (
 	jsoniter "github.com/json-iterator/go"
 )
 
-type Event struct {
-	onGroupMessages   []onGroupMessage
-	onPrivateMessages []onPrivateMessage
-}
-type onGroupMessage func(senderQid, groupId int64, message *EventMessage)
-type onPrivateMessage func(userId int64, message *EventMessage)
-
 func (b *Event) event(postType string, data jsoniter.Any) {
 	switch postType {
 	case "message":
-		b.eventMessage(data)
+		b.MessageEvent.eventMessage(data)
 	case "meta_event":
 		// 暂时忽略
-		return
+	case "request":
+		b.RequestEvent.eventRequest(data)
 	}
 }
 
-func (b *Event) eventMessage(data jsoniter.Any) {
+func (b *MessageEvent) eventMessage(data jsoniter.Any) {
 	var (
 		senderQid  = data.Get("user_id").ToInt64()
 		rawMessage = data.Get("raw_message").ToString()
+		messageId  = data.Get("message_id").ToInt32()
 		m          = &EventMessage{
 			RawMessage: rawMessage,
 			Messages:   ParseMessage(rawMessage),
@@ -58,18 +53,45 @@ func (b *Event) eventMessage(data jsoniter.Any) {
 			groupId = data.Get("group_id").ToInt64()
 		)
 		for i := range b.onGroupMessages {
-			b.onGroupMessages[i](senderQid, groupId, m)
+			b.onGroupMessages[i](messageId, senderQid, groupId, m)
 		}
 	case "private":
 		for i := range b.onPrivateMessages {
-			b.onPrivateMessages[i](senderQid, m)
+			b.onPrivateMessages[i](messageId, senderQid, m)
 		}
 	}
 }
 
-func (b *Event) OnGroupMessage(f onGroupMessage) {
+func (b *MessageEvent) OnGroupMessage(f onGroupMessage) {
 	b.onGroupMessages = append(b.onGroupMessages, f)
 }
-func (b *Event) OnPrivateMessage(f onPrivateMessage) {
+func (b *MessageEvent) OnPrivateMessage(f onPrivateMessage) {
 	b.onPrivateMessages = append(b.onPrivateMessages, f)
+}
+
+func (r *RequestEvent) eventRequest(data jsoniter.Any) {
+	var (
+		userId  = data.Get("user_id").ToInt64()
+		comment = data.Get("comment").ToString()
+		flag    = data.Get("flag").ToString()
+	)
+
+	switch data.Get("request_type").ToString() {
+	case "friend":
+		for i := range r.onFriendRequests {
+			r.onFriendRequests[i](userId, comment, flag)
+		}
+	case "group":
+		groupId := data.Get("group_id").ToInt64()
+		subType := data.Get("sub_type").ToString()
+		for i := range r.onGroupRequests {
+			r.onGroupRequests[i](userId, groupId, GroupRequestEventSubType(subType), comment, flag)
+		}
+	}
+}
+func (r *RequestEvent) OnFriendRequest(f onFriendRequest) {
+	r.onFriendRequests = append(r.onFriendRequests, f)
+}
+func (r *RequestEvent) OnGroupRequest(f onGroupRequest) {
+	r.onGroupRequests = append(r.onGroupRequests, f)
 }

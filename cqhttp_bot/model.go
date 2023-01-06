@@ -83,3 +83,27 @@ type messageAt struct {
 	Qid  any
 	Name string // 当在群中找不到此QQ号的名称时才会生效
 }
+
+type Event struct {
+	MessageEvent
+	RequestEvent
+}
+type MessageEvent struct {
+	onGroupMessages   []onGroupMessage
+	onPrivateMessages []onPrivateMessage
+}
+type RequestEvent struct {
+	onFriendRequests []onFriendRequest
+	onGroupRequests  []onGroupRequest
+}
+type onGroupMessage func(messageId int32, senderQid, groupId int64, message *EventMessage)
+type onPrivateMessage func(messageId int32, userId int64, message *EventMessage)
+type onFriendRequest func(userId int64, comment string, flag string)
+type onGroupRequest func(userId, groupId int64, requestType GroupRequestEventSubType, comment, flag string)
+
+type GroupRequestEventSubType string
+
+const (
+	Add    = GroupRequestEventSubType("add")    // 加入
+	Invite = GroupRequestEventSubType("invite") // 邀请
+)

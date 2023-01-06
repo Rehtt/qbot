@@ -1,3 +1,25 @@
+/**
+ * Copyright (c) 2023 Rehtt
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package cqhttp_bot
 
 import (
@@ -7,7 +29,6 @@ import (
 
 func ParseMessage(raw string) (m Messages) {
 	var index int
-	fmt.Println(raw)
 	for {
 		index = strings.Index(raw, "[CQ:")
 		if index > 0 {
@@ -40,43 +61,7 @@ func ParseMessage(raw string) (m Messages) {
 	}
 	return
 }
-
-func EncodingMessage(msgs Messages) string {
-	var out strings.Builder
-	for _, m := range msgs {
-		switch m.Type {
-		case Reply:
-			out.WriteString(fmt.Sprintf("[CQ:reply,id=%s]", m.Text))
-		case IMAGE:
-			if m.Image == nil {
-				continue
-			}
-			var imageType = "show"
-			if m.Image.Flash {
-				imageType = "flash"
-			}
-			var file = m.Image.File
-			if file == "" && m.Image.Url != "" {
-				file = m.Image.Url
-			}
-			out.WriteString(fmt.Sprintf("[CQ:image,file=%s,type=%s]", file, imageType))
-		case TEXT:
-			out.WriteString(m.Text)
-		case At:
-			if m.At == nil {
-				continue
-			}
-			out.WriteString(fmt.Sprintf("[CQ:at,qq=%v", m.At.Qid))
-			if m.At.Name != "" {
-				out.WriteString(fmt.Sprintf(",name=%s", m.At.Name))
-			}
-			out.WriteString("]")
-		}
-	}
-	return out.String()
-}
 func MessageArray(msg ...Message) Messages {
-	fmt.Println(msg)
 	return msg
 }
 func TextMessage(text string) Message {
@@ -132,4 +117,38 @@ func (m *Messages) ImageMessage(file, url string, flash bool) Messages {
 }
 func (m *Messages) ReplyMessage(messageId string) Messages {
 	return m.Add(ReplyMessage(messageId))
+}
+func (m *Messages) RawMessage() string {
+	var out strings.Builder
+	for _, msg := range *m {
+		switch msg.Type {
+		case Reply:
+			out.WriteString(fmt.Sprintf("[CQ:reply,id=%s]", msg.Text))
+		case IMAGE:
+			if msg.Image == nil {
+				continue
+			}
+			var imageType = "show"
+			if msg.Image.Flash {
+				imageType = "flash"
+			}
+			var file = msg.Image.File
+			if file == "" && msg.Image.Url != "" {
+				file = msg.Image.Url
+			}
+			out.WriteString(fmt.Sprintf("[CQ:image,file=%s,type=%s]", file, imageType))
+		case TEXT:
+			out.WriteString(msg.Text)
+		case At:
+			if msg.At == nil {
+				continue
+			}
+			out.WriteString(fmt.Sprintf("[CQ:at,qq=%v", msg.At.Qid))
+			if msg.At.Name != "" {
+				out.WriteString(fmt.Sprintf(",name=%s", msg.At.Name))
+			}
+			out.WriteString("]")
+		}
+	}
+	return out.String()
 }
