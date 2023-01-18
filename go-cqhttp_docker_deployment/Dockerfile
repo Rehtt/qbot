@@ -8,7 +8,7 @@ WORKDIR /build
 
 RUN set -ex  \
     && sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories \
-    && apk add --no-cache git jq curl  \
+    && apk add --no-cache git jq curl tzdata \
     && latest=$(curl https://api.github.com/repos/Mrs4s/go-cqhttp/releases/latest | jq -r '.tag_name') \
     && git clone -b ${latest} --depth=1 https://github.com/Mrs4s/go-cqhttp.git \
     && cd go-cqhttp \
