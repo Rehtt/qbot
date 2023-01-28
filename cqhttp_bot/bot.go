@@ -60,7 +60,7 @@ func (b *Bot) handle() {
 		}
 		message := jsoniter.Get(msg)
 		if ty := message.Get("post_type").ToString(); ty != "" {
-			b.event(ty, message)
+			go b.event(ty, message)
 		} else if m := message.Get("echo").ToString(); m != "" {
 			b.actionMap.Store(m, message)
 		}
