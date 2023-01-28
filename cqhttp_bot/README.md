@@ -5,7 +5,7 @@
 ## Installation
 
 ```bash
-go get -u godoc.org/github.com/Rehtt/qbot/cqhttp_bot
+go get -u github.com/Rehtt/qbot/cqhttp_bot
 ```
 
 ## Use
