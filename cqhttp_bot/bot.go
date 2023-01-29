@@ -48,7 +48,6 @@ func New(addr string) (b *Bot) {
 	}
 	b.ws = conn
 	b.Action.ws = conn
-	go b.handle()
 	return
 }
 func (b *Bot) handle() {
@@ -65,4 +64,14 @@ func (b *Bot) handle() {
 			b.actionMap.Store(m, message)
 		}
 	}
+}
+
+// Start 已非阻塞的方式运行
+func (b *Bot) Start() {
+	go b.handle()
+}
+
+// Run 已阻塞的方式运行
+func (b *Bot) Run() {
+	b.handle()
 }

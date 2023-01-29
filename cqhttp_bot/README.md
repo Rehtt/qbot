@@ -13,6 +13,8 @@ go get -u github.com/Rehtt/qbot/cqhttp_bot
 ### 初始化
 ```go
 bot := cqhttp_bot.New("ws://127.0.0.1:8080")
+//bot.Start() //  已非阻塞的方式运行
+bot.Run()   //  已阻塞的方式运行
 ```
 
 ### 事件

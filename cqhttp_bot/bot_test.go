@@ -30,6 +30,7 @@ import (
 
 func TestNew(t *testing.T) {
 	b := New("ws://127.0.0.1:8080")
+	b.Start()
 	fmt.Println(b.GetFriendsList())
 	b.Event.OnGroupMessage(func(messageId int32, senderQid, groupId int64, message *EventMessage) {
 		fmt.Println(senderQid, groupId, message.Messages, message.RawMessage)
