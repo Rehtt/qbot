@@ -37,6 +37,7 @@ type Action struct {
 	ws          *websocket.Conn
 	actionMap   sync.Map
 	actionIndex atomic.Int64
+	sendLock    sync.Mutex
 }
 
 func (b *Action) action(action string, data any) (jsoniter.Any, error) {
@@ -48,7 +49,10 @@ func (b *Action) action(action string, data any) (jsoniter.Any, error) {
 	jsoniter.NewEncoder(&tmp).Encode(request)
 	tmp.WriteString(strconv.FormatInt(b.actionIndex.Add(1), 10))
 	request.Echo = GenCode(tmp.Bytes())
+	// 不允许并发发送
+	b.sendLock.Lock()
 	err := b.ws.WriteJSON(request)
+	b.sendLock.Unlock()
 	if err != nil {
 		return nil, err
 	}
