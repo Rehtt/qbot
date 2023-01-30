@@ -25,7 +25,7 @@ package main
 import (
 	"fmt"
 	"github.com/Rehtt/qbot/cqhttp_bot"
-	"github.com/Rehtt/qbot/cqhttp_bot/comment"
+	"github.com/Rehtt/qbot/cqhttp_bot/command"
 	"time"
 )
 
@@ -42,15 +42,15 @@ func main() {
 	bot.SendMsg(852122585, cqhttp_bot.MessageArray(cqhttp_bot.TextMessage("test")), cqhttp_bot.Group)
 
 	// 开启命令模式
-	c := comment.New(bot)
-	test := &comment.Comment{
+	c := command.New(bot)
+	test := &command.Command{
 		Name:  "test",
 		Usage: "test1",
-		Run: func(paramete string, flag comment.Flag, bot *cqhttp_bot.Bot, messageType cqhttp_bot.EventMessageType, messageId int32, senderQid, groupId int64, message *cqhttp_bot.EventMessage) {
+		Run: func(paramete string, flag command.Flag, bot *cqhttp_bot.Bot, messageType cqhttp_bot.EventMessageType, messageId int32, senderQid, groupId int64, message *cqhttp_bot.EventMessage) {
 			fmt.Println("test1", flag, paramete)
 		},
 	}
 	test.Flag().Var("f", "123", "可选参数")
-	c.AddComment(test)
+	c.AddCommand(test)
 	time.Sleep(10 * time.Minute)
 }

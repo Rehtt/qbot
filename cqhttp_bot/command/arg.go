@@ -1,4 +1,4 @@
-package comment
+package command
 
 type Arg struct {
 	name  string
