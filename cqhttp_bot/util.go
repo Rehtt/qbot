@@ -31,6 +31,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
+	jsoniter "github.com/json-iterator/go"
 	"strings"
 	"time"
 )
@@ -56,4 +57,9 @@ func parse(raw string) (out map[string]string) {
 		}
 	}
 	return
+}
+
+func DeepCopy(dst, src any) {
+	o, _ := jsoniter.Marshal(src)
+	jsoniter.Unmarshal(o, dst)
 }

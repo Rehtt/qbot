@@ -7,24 +7,27 @@ import (
 
 type Cmd struct {
 	bot      *cqhttp_bot.Bot
-	comments map[string]*Comment
+	comments comments
 }
+type comments map[string]*Comment
 type Comment struct {
-	Name string
-	Help string
-	Run  commentRunFunc
-	sub  map[string]*Comment
+	Name  string
+	Usage string
+	flag  *Flag
+	Run   RunFunc
+	sub   comments
 }
 
-type commentRunFunc func(thisComment *Comment, paramete string, bot *cqhttp_bot.Bot, messageType cqhttp_bot.EventMessageType, messageId int32, senderQid, groupId int64, message *cqhttp_bot.EventMessage)
+type RunFunc func(paramete string, flag Flag, bot *cqhttp_bot.Bot, messageType cqhttp_bot.EventMessageType, messageId int32, senderQid, groupId int64, message *cqhttp_bot.EventMessage)
 
 func New(bot *cqhttp_bot.Bot) (c *Cmd) {
 	c = new(Cmd)
 	c.bot = bot
 	c.comments = DefaultComment(c)
+	c.run()
 	return
 }
-func (c *Cmd) Run() {
+func (c *Cmd) run() {
 	c.bot.OnPrivateMessage(func(messageId int32, userId int64, message *cqhttp_bot.EventMessage) {
 		c.parseMessage(cqhttp_bot.Private, messageId, userId, 0, message)
 	})
@@ -36,50 +39,69 @@ func (c *Cmd) Run() {
 func (c *Cmd) parseMessage(messageType cqhttp_bot.EventMessageType, messageId int32, senderQid, groupId int64, message *cqhttp_bot.EventMessage) {
 	for _, m := range message.Messages {
 		if m.Type == cqhttp_bot.TEXT && m.Text[0] == '/' {
-			com, p := parseComment(m.Text[1:], c.comments)
+			com, arg, p := c.comments.parse(m.Text[1:])
+			//com, arg, p := parseComment(m.Text[1:], c.comments, nil)
 			if com != nil {
-				com.Run(com, p, c.bot, messageType, messageId, senderQid, groupId, message)
+				com.Run(p, arg, c.bot, messageType, messageId, senderQid, groupId, message)
 			}
 		}
 	}
 }
-func parseComment(text string, comments map[string]*Comment) (c *Comment, p string) {
-	texts := strings.SplitN(text, " ", 2)
-	if com, ok := comments[texts[0]]; !ok {
-		return nil, text
-	} else {
-		c = com
-		if len(com.sub) != 0 && len(texts) == 2 && texts[1] != "" {
-			c, p = parseComment(texts[1], com.sub)
-			if c == nil {
-				c = com
-			}
+func (c comments) parse(str string) (co *Comment, f Flag, p string) {
+	strArr := strings.Split(str, " ")
+	var flagName string
+	for i := 0; i < len(strArr); i++ {
+		s := strArr[i]
+		if flagName != "" {
+			f.set(flagName, s)
+			flagName = ""
+			continue
 		}
-		return
+		if com, ok := c[s]; ok {
+			co = com
+		} else {
+			if co != nil && co.flag != nil && s[0] == '-' {
+				flagName = s[1:]
+				if _, ok = co.flag.Get(flagName); ok {
+					cqhttp_bot.DeepCopy(&f.args, co.flag.args)
+					continue
+				}
+			}
+			return co, f, strings.Join(strArr[i:], " ")
+		}
+		flagName = ""
 	}
+	return
 }
-func (c *Cmd) AddComment(comment ...*Comment) {
-	if len(comment) == 0 {
+func (c *Cmd) AddComment(comments ...*Comment) {
+	if len(comments) == 0 {
 		return
 	}
 	if c.comments == nil {
-		c.comments = make(map[string]*Comment, len(comment))
+		c.comments = make(map[string]*Comment, len(comments))
 	}
-	for _, sub := range comment {
+	for _, sub := range comments {
 		c.comments[sub.Name] = sub
 	}
 }
-func (c *Comment) AddSubComment(comment ...*Comment) {
-	if len(comment) == 0 {
+func (c *Comment) AddSubComment(comments ...*Comment) {
+	if len(comments) == 0 {
 		return
 	}
 	if c.sub == nil {
-		c.sub = make(map[string]*Comment, len(comment))
+		c.sub = make(map[string]*Comment, len(comments))
 	}
-	for _, sub := range comment {
+	for _, sub := range comments {
 		c.sub[sub.Name] = sub
 	}
 }
+func (c *Comment) Flag() *Flag {
+	if c.flag == nil {
+		c.flag = new(Flag)
+	}
+	return c.flag
+}
+
 func (c *Cmd) help() string {
 	var tmp strings.Builder
 	for _, com := range c.comments {
@@ -88,7 +110,7 @@ func (c *Cmd) help() string {
 		}
 		tmp.WriteString(com.Name)
 		tmp.WriteString(" ")
-		tmp.WriteString(com.Help)
+		tmp.WriteString(com.Usage)
 	}
 	return tmp.String()
 }

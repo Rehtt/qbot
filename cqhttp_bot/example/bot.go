@@ -20,33 +20,37 @@
  * SOFTWARE.
  */
 
-package cqhttp_bot
+package main
 
 import (
 	"fmt"
-	"testing"
+	"github.com/Rehtt/qbot/cqhttp_bot"
+	"github.com/Rehtt/qbot/cqhttp_bot/comment"
 	"time"
 )
 
-func TestNew(t *testing.T) {
-	b := New("ws://127.0.0.1:8080")
-	b.Start()
-	fmt.Println(b.GetFriendsList())
-	b.Event.OnGroupMessage(func(messageId int32, senderQid, groupId int64, message *EventMessage) {
-		fmt.Println(senderQid, groupId, message.Messages, message.RawMessage)
-	})
-	b.OnPrivateMessage(func(messageId int32, userId int64, message *EventMessage) {
+func main() {
+	bot := cqhttp_bot.New("ws://127.0.0.1:8060")
+	bot.Start()
+	fmt.Println(bot.GetFriendsList())
+	bot.Event.OnPrivateMessage(func(messageId int32, userId int64, message *cqhttp_bot.EventMessage) {
 		fmt.Println(userId, message.Messages, message.RawMessage)
 	})
-	b.SendMsg(852122585, MessageArray(TextMessage("test")), Group)
-	time.Sleep(10 * time.Minute)
-}
+	bot.Event.OnGroupMessage(func(messageId int32, senderQid, groupId int64, message *cqhttp_bot.EventMessage) {
+		fmt.Println(senderQid, groupId, message.Messages, message.RawMessage)
+	})
+	bot.SendMsg(852122585, cqhttp_bot.MessageArray(cqhttp_bot.TextMessage("test")), cqhttp_bot.Group)
 
-func BenchmarkNew(b *testing.B) {
-	b.StopTimer()
-	n := New("ws://cqhttp.rehtt.com/ws/")
-	b.StartTimer()
-	for i := 0; i < b.N; i++ {
-		n.GetFriendsList()
+	// 开启命令模式
+	c := comment.New(bot)
+	test := &comment.Comment{
+		Name:  "test",
+		Usage: "test1",
+		Run: func(paramete string, flag comment.Flag, bot *cqhttp_bot.Bot, messageType cqhttp_bot.EventMessageType, messageId int32, senderQid, groupId int64, message *cqhttp_bot.EventMessage) {
+			fmt.Println("test1", flag, paramete)
+		},
 	}
+	test.Flag().Var("f", "123", "可选参数")
+	c.AddComment(test)
+	time.Sleep(10 * time.Minute)
 }

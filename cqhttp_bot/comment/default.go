@@ -7,9 +7,9 @@ import (
 func DefaultComment(c *Cmd) map[string]*Comment {
 	return map[string]*Comment{
 		"help": {
-			Name: "help",
-			Help: "显示帮助",
-			Run: func(thisComment *Comment, paramete string, bot *cqhttp_bot.Bot, messageType cqhttp_bot.EventMessageType, messageId int32, senderQid, groupId int64, message *cqhttp_bot.EventMessage) {
+			Name:  "help",
+			Usage: "显示帮助",
+			Run: func(paramete string, flag Flag, bot *cqhttp_bot.Bot, messageType cqhttp_bot.EventMessageType, messageId int32, senderQid, groupId int64, message *cqhttp_bot.EventMessage) {
 				switch messageType {
 				case cqhttp_bot.Private:
 					bot.SendPrivateMsg(senderQid, c.help())
