@@ -24,7 +24,6 @@ type RunFunc func(paramete string, flag Flag, bot *cqhttp_bot.Bot, ctx *cqhttp_b
 func New(bot *cqhttp_bot.Bot) (c *Cmd) {
 	c = new(Cmd)
 	c.bot = bot
-	c.Commands = DefaultCommand(c)
 	c.run()
 	return
 }
