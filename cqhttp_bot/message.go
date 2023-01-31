@@ -105,7 +105,7 @@ func (m *Messages) Add(msg Message) Messages {
 	*m = append(*m, msg)
 	return *m
 }
-func (m *Messages) AddTextMessage(text string) Messages {
+func (m *Messages) TextMessage(text string) Messages {
 	return m.Add(TextMessage(text))
 }
 func (m *Messages) AtMessage(qid any, name ...string) Messages {
@@ -151,4 +151,24 @@ func (m *Messages) RawMessage() string {
 		}
 	}
 	return out.String()
+}
+
+// QuickReplyText 对消息快速回复
+// @param at @发送人，仅当消息类型为Group时有效
+func (e *EventMessageContext) QuickReplyText(bot *Bot, msg string, at ...bool) (int32, error) {
+	return e.QuickReply(bot, MessageArray(TextMessage(msg)), at...)
+}
+
+// QuickReply 对消息快速回复
+// @param at @发送人，仅当消息类型为Group时有效
+func (e *EventMessageContext) QuickReply(bot *Bot, msg Messages, at ...bool) (int32, error) {
+	qid := e.SenderId
+	if e.MessageType == Group {
+		qid = e.GroupId
+		if len(at) != 0 && at[0] {
+			msg.TextMessage("\n")
+			msg.AtMessage(e.SenderId)
+		}
+	}
+	return bot.SendMsg(qid, msg, e.MessageType)
 }

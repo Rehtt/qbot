@@ -19,7 +19,7 @@ type Command struct {
 	sub   Commands
 }
 
-type RunFunc func(paramete string, flag Flag, bot *cqhttp_bot.Bot, messageType cqhttp_bot.EventMessageType, messageId int32, senderQid, groupId int64, message *cqhttp_bot.EventMessage)
+type RunFunc func(paramete string, flag Flag, bot *cqhttp_bot.Bot, ctx *cqhttp_bot.EventMessageContext)
 
 func New(bot *cqhttp_bot.Bot) (c *Cmd) {
 	c = new(Cmd)
@@ -29,21 +29,17 @@ func New(bot *cqhttp_bot.Bot) (c *Cmd) {
 	return
 }
 func (c *Cmd) run() {
-	c.bot.OnPrivateMessage(func(messageId int32, userId int64, message *cqhttp_bot.EventMessage) {
-		c.parseMessage(cqhttp_bot.Private, messageId, userId, 0, message)
+	c.bot.OnMessage(func(ctx cqhttp_bot.EventMessageContext) {
+		c.parseMessage(&ctx)
 	})
-	c.bot.OnGroupMessage(func(messageId int32, senderQid, groupId int64, message *cqhttp_bot.EventMessage) {
-		c.parseMessage(cqhttp_bot.Group, messageId, senderQid, groupId, message)
-	})
-
 }
-func (c *Cmd) parseMessage(messageType cqhttp_bot.EventMessageType, messageId int32, senderQid, groupId int64, message *cqhttp_bot.EventMessage) {
-	for _, m := range message.Messages {
+func (c *Cmd) parseMessage(ctx *cqhttp_bot.EventMessageContext) {
+	for _, m := range ctx.Message.Messages {
 		if m.Type == cqhttp_bot.TEXT && m.Text[0] == '/' {
 			com, arg, p := c.Commands.Parse(m.Text[1:])
 			//com, arg, p := parseCommand(m.Text[1:], c.Commands, nil)
 			if com != nil {
-				com.Run(p, arg, c.bot, messageType, messageId, senderQid, groupId, message)
+				com.Run(p, arg, c.bot, ctx)
 			}
 		}
 	}

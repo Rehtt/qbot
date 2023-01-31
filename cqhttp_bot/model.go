@@ -54,6 +54,14 @@ type Msg struct {
 	AutoEscape  *bool            `json:"auto_escape,omitempty"` // 消息内容是否作为纯文本发送 ( 即不解析 CQ 码 ) , 只在 message 字段是字符串时有效
 }
 
+type EventMessageContext struct {
+	MessageId   int32
+	MessageType EventMessageType
+	SenderId    int64
+	GroupId     int64
+	Message     EventMessage
+}
+
 type EventMessage struct {
 	RawMessage string
 	Messages   []Message
@@ -91,13 +99,15 @@ type Event struct {
 type MessageEvent struct {
 	onGroupMessages   []onGroupMessage
 	onPrivateMessages []onPrivateMessage
+	onMessage         []onMessage
 }
 type RequestEvent struct {
 	onFriendRequests []onFriendRequest
 	onGroupRequests  []onGroupRequest
 }
-type onGroupMessage func(messageId int32, senderQid, groupId int64, message *EventMessage)
-type onPrivateMessage func(messageId int32, userId int64, message *EventMessage)
+type onGroupMessage func(messageId int32, senderQid, groupId int64, message EventMessage)
+type onPrivateMessage func(messageId int32, userId int64, message EventMessage)
+type onMessage func(ctx EventMessageContext)
 type onFriendRequest func(userId int64, comment string, flag string)
 type onGroupRequest func(userId, groupId int64, requestType GroupRequestEventSubType, comment, flag string)
 

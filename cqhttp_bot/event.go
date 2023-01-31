@@ -42,11 +42,16 @@ func (b *MessageEvent) eventMessage(data jsoniter.Any) {
 		senderQid  = data.Get("user_id").ToInt64()
 		rawMessage = data.Get("raw_message").ToString()
 		messageId  = data.Get("message_id").ToInt32()
-		m          = &EventMessage{
+		m          = EventMessage{
 			RawMessage: rawMessage,
 			Messages:   ParseMessage(rawMessage),
 		}
 	)
+	ctx := EventMessageContext{
+		MessageId: messageId,
+		SenderId:  senderQid,
+		Message:   m,
+	}
 	switch data.Get("message_type").ToString() {
 	case "group":
 		var (
@@ -55,16 +60,30 @@ func (b *MessageEvent) eventMessage(data jsoniter.Any) {
 		for i := range b.onGroupMessages {
 			b.onGroupMessages[i](messageId, senderQid, groupId, m)
 		}
+		ctx.MessageType = Group
+		ctx.GroupId = groupId
 	case "private":
 		for i := range b.onPrivateMessages {
 			b.onPrivateMessages[i](messageId, senderQid, m)
 		}
+		ctx.MessageType = Private
+	}
+	for i := range b.onMessage {
+		b.onMessage[i](ctx)
 	}
 }
 
+// OnMessage 接收所有消息
+func (b *MessageEvent) OnMessage(f onMessage) {
+	b.onMessage = append(b.onMessage, f)
+}
+
+// OnGroupMessage 接收群消息
 func (b *MessageEvent) OnGroupMessage(f onGroupMessage) {
 	b.onGroupMessages = append(b.onGroupMessages, f)
 }
+
+// OnPrivateMessage 接收私人消息
 func (b *MessageEvent) OnPrivateMessage(f onPrivateMessage) {
 	b.onPrivateMessages = append(b.onPrivateMessages, f)
 }

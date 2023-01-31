@@ -10,7 +10,7 @@ func DefaultCommand(c *Cmd) map[string]*Command {
 		"help": {
 			Name:  "help",
 			Usage: "显示帮助",
-			Run: func(paramete string, flag Flag, bot *cqhttp_bot.Bot, messageType cqhttp_bot.EventMessageType, messageId int32, senderQid, groupId int64, message *cqhttp_bot.EventMessage) {
+			Run: func(paramete string, flag Flag, bot *cqhttp_bot.Bot, ctx *cqhttp_bot.EventMessageContext) {
 				var help string
 				if paramete != "" {
 					com, _, _ := c.Commands.Parse(paramete)
@@ -24,12 +24,13 @@ func DefaultCommand(c *Cmd) map[string]*Command {
 				} else {
 					help = c.Help()
 				}
-				switch messageType {
-				case cqhttp_bot.Private:
-					bot.SendPrivateMsg(senderQid, help)
-				case cqhttp_bot.Group:
-					bot.SendMsg(groupId, cqhttp_bot.MessageArray(cqhttp_bot.TextMessage(help)), messageType)
-				}
+				ctx.QuickReplyText(bot, help, true)
+				//switch ctx.MessageType {
+				//case cqhttp_bot.Private:
+				//	bot.SendPrivateMsg(ctx.SenderQid, help)
+				//case cqhttp_bot.Group:
+				//	bot.SendMsg(groupId, cqhttp_bot.MessageArray(cqhttp_bot.TextMessage(help)), messageType)
+				//}
 			},
 		},
 	}
