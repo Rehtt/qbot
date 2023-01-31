@@ -38,7 +38,7 @@ func (c *Cmd) parseMessage(ctx *cqhttp_bot.EventMessageContext) {
 			com, arg, p := c.Commands.Parse(m.Text[1:])
 			//com, arg, p := parseCommand(m.Text[1:], c.Commands, nil)
 			if com != nil {
-				com.Run(p, arg, c.bot, ctx)
+				go com.Run(p, arg, c.bot, ctx)
 			}
 		}
 	}
