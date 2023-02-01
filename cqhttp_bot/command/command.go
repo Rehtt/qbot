@@ -44,13 +44,10 @@ func (c *Cmd) parseMessage(ctx *cqhttp_bot.EventMessageContext) {
 	}
 }
 func (c Commands) Parse(str string) (co *Command, f Flag, p string) {
-	strArr := strings.Split(str, " ")
+	fields := strings.Fields(str)
 	var flagName string
-	for i := 0; i < len(strArr); i++ {
-		s := strArr[i]
-		if s == "" {
-			continue
-		}
+	for i := 0; i < len(fields); i++ {
+		s := fields[i]
 		if flagName != "" {
 			f.set(flagName, s)
 			flagName = ""
@@ -75,7 +72,7 @@ func (c Commands) Parse(str string) (co *Command, f Flag, p string) {
 					continue
 				}
 			}
-			return co, f, strings.Join(strArr[i:], " ")
+			return co, f, strings.Join(fields[i:], " ")
 		}
 	}
 	return
