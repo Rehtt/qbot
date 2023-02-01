@@ -25,7 +25,23 @@ package cqhttp_bot
 import (
 	"fmt"
 	"strings"
+	"sync"
 )
+
+var eventMessagePool = sync.Pool{
+	New: func() any {
+		return new(EventMessage)
+	},
+}
+
+func (e *EventMessage) Close() {
+	e.RawMessage = ""
+	e.Messages = nil
+	eventMessagePool.Put(e)
+}
+func NewEventMessage() *EventMessage {
+	return eventMessagePool.Get().(*EventMessage)
+}
 
 func ParseMessage(raw string) (m Messages) {
 	var index int
@@ -151,6 +167,20 @@ func (m *Messages) RawMessage() string {
 		}
 	}
 	return out.String()
+}
+
+var eventMessageContextPool = sync.Pool{
+	New: func() any {
+		return new(EventMessageContext)
+	},
+}
+
+func NewEventMessageContext() *EventMessageContext {
+	e := eventMessageContextPool.Get().(*EventMessageContext)
+	return e
+}
+func (e *EventMessageContext) Close() {
+	eventMessageContextPool.Put(e)
 }
 
 // QuickReplyText 对消息快速回复

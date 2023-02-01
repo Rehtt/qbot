@@ -59,7 +59,7 @@ type EventMessageContext struct {
 	MessageType EventMessageType
 	SenderId    int64
 	GroupId     int64
-	Message     EventMessage
+	Message     *EventMessage
 }
 
 type EventMessage struct {
@@ -105,9 +105,9 @@ type RequestEvent struct {
 	onFriendRequests []onFriendRequest
 	onGroupRequests  []onGroupRequest
 }
-type onGroupMessage func(messageId int32, senderQid, groupId int64, message EventMessage)
-type onPrivateMessage func(messageId int32, userId int64, message EventMessage)
-type onMessage func(ctx EventMessageContext)
+type onGroupMessage func(messageId int32, senderQid, groupId int64, message *EventMessage)
+type onPrivateMessage func(messageId int32, userId int64, message *EventMessage)
+type onMessage func(ctx *EventMessageContext)
 type onFriendRequest func(userId int64, comment string, flag string)
 type onGroupRequest func(userId, groupId int64, requestType GroupRequestEventSubType, comment, flag string)
 

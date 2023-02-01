@@ -29,6 +29,9 @@ import (
 func (b *Event) event(postType string, data jsoniter.Any) {
 	switch postType {
 	case "message":
+		if len(b.onMessage) == 0 && len(b.onPrivateMessages) == 0 && len(b.onGroupMessages) == 0 {
+			break
+		}
 		b.MessageEvent.eventMessage(data)
 	case "meta_event":
 		// 暂时忽略
@@ -39,19 +42,21 @@ func (b *Event) event(postType string, data jsoniter.Any) {
 
 func (b *MessageEvent) eventMessage(data jsoniter.Any) {
 	var (
-		senderQid  = data.Get("user_id").ToInt64()
-		rawMessage = data.Get("raw_message").ToString()
-		messageId  = data.Get("message_id").ToInt32()
-		m          = EventMessage{
-			RawMessage: rawMessage,
-			Messages:   ParseMessage(rawMessage),
-		}
+		senderQid = data.Get("user_id").ToInt64()
+		messageId = data.Get("message_id").ToInt32()
+		m         = NewEventMessage()
+		ctx       = NewEventMessageContext()
 	)
-	ctx := EventMessageContext{
-		MessageId: messageId,
-		SenderId:  senderQid,
-		Message:   m,
-	}
+	defer m.Close()
+	defer ctx.Close()
+	m.RawMessage = data.Get("raw_message").ToString()
+	m.Messages = ParseMessage(m.RawMessage)
+
+	ctx.MessageId = messageId
+	ctx.SenderId = senderQid
+	ctx.Message = m
+	ctx.GroupId = 0
+
 	switch data.Get("message_type").ToString() {
 	case "group":
 		var (

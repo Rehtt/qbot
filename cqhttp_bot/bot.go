@@ -30,17 +30,19 @@ package cqhttp_bot
 import (
 	"github.com/gorilla/websocket"
 	jsoniter "github.com/json-iterator/go"
+	"github.com/panjf2000/ants/v2"
 	"log"
 )
 
 type Bot struct {
 	ws *websocket.Conn
+	*Options
 	Event
 	Action
 }
 
 // New 实例化一个Bot对象
-func New(addr string) (b *Bot) {
+func New(addr string, options ...Option) (b *Bot) {
 	b = new(Bot)
 	conn, _, err := websocket.DefaultDialer.Dial(addr, nil)
 	if err != nil {
@@ -48,21 +50,30 @@ func New(addr string) (b *Bot) {
 	}
 	b.ws = conn
 	b.Action.ws = conn
+	b.Options = loadOptions(options...)
 	return
 }
 func (b *Bot) handle() {
 	ws := b.ws
+	if b.handleThreadNum == 0 {
+		b.handleThreadNum = 200
+	}
+	// 使用goroutine池处理
+	h, _ := ants.NewPoolWithFunc(b.handleThreadNum, func(i interface{}) {
+		message := i.(jsoniter.Any)
+		if ty := message.Get("post_type").ToString(); ty != "" {
+			b.event(ty, message)
+		} else if m := message.Get("echo").ToString(); m != "" {
+			b.actionMap.Store(m, message)
+		}
+	})
+	defer h.Release()
 	for {
 		_, msg, err := ws.ReadMessage()
 		if err != nil {
 			log.Println("信息错误：", err)
 		}
-		message := jsoniter.Get(msg)
-		if ty := message.Get("post_type").ToString(); ty != "" {
-			go b.event(ty, message)
-		} else if m := message.Get("echo").ToString(); m != "" {
-			b.actionMap.Store(m, message)
-		}
+		h.Invoke(jsoniter.Get(msg))
 	}
 }
 
