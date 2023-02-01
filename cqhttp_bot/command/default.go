@@ -16,7 +16,7 @@ func DefaultCommandHelp(c *Cmd) *Command {
 				if com == nil {
 					help = fmt.Sprintf("找不到相关命令 `%s`", paramete)
 				} else {
-					help = fmt.Sprintf("命令：\n%s\n说明：\n%s\n", com.Usage, paramete)
+					help = fmt.Sprintf("命令：\n%s\n说明：\n%s\n", paramete, com.Usage)
 					help += com.Help()
 				}
 
