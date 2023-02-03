@@ -2,6 +2,7 @@ package cqhttp_bot
 
 type Options struct {
 	handleThreadNum int
+	debug           bool
 }
 type Option func(options *Options)
 
@@ -9,6 +10,11 @@ type Option func(options *Options)
 func WithHandleThreadNum(n int) Option {
 	return func(options *Options) {
 		options.handleThreadNum = n
+	}
+}
+func WithDebug(n bool) Option {
+	return func(options *Options) {
+		options.debug = n
 	}
 }
 

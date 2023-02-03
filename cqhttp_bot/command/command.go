@@ -46,6 +46,15 @@ func (c *Cmd) parseMessage(ctx *cqhttp_bot.EventMessageContext) {
 func (c Commands) Parse(str string) (co *Command, f Flag, p string) {
 	fields := strings.Fields(str)
 	var flagName string
+	defer func() {
+		if co != nil && co.flag != nil {
+			co.flag.Range(func(name, value, usage string) {
+				if _, ok := f.Get(name); !ok {
+					f.set(name, value)
+				}
+			})
+		}
+	}()
 	for i := 0; i < len(fields); i++ {
 		s := fields[i]
 		if flagName != "" {
@@ -65,12 +74,14 @@ func (c Commands) Parse(str string) (co *Command, f Flag, p string) {
 				flagName = ""
 				continue
 			}
-			if co.flag != nil && s[0] == '-' {
+			if s[0] == '-' {
 				flagName = s[1:]
-				if _, ok := co.flag.Get(flagName); ok {
-					cqhttp_bot.DeepCopy(&f.args, co.flag.args)
-					continue
+				if co.flag != nil {
+					if v, ok := co.flag.Get(flagName); ok {
+						f.set(flagName, v)
+					}
 				}
+				continue
 			}
 			return co, f, strings.Join(fields[i:], " ")
 		}

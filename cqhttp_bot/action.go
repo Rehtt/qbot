@@ -27,6 +27,7 @@ import (
 	"errors"
 	"github.com/gorilla/websocket"
 	jsoniter "github.com/json-iterator/go"
+	"log"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -38,6 +39,7 @@ type Action struct {
 	actionMap   sync.Map
 	actionIndex atomic.Int64
 	sendLock    sync.Mutex
+	options     *Options
 }
 
 func (b *Action) action(action string, data any) (jsoniter.Any, error) {
@@ -49,9 +51,13 @@ func (b *Action) action(action string, data any) (jsoniter.Any, error) {
 	jsoniter.NewEncoder(&tmp).Encode(request)
 	tmp.WriteString(strconv.FormatInt(b.actionIndex.Add(1), 10))
 	request.Echo = GenCode(tmp.Bytes())
+	out, _ := jsoniter.Marshal(request)
+	if b.options != nil && b.options.debug {
+		log.Println("qbot action: ", string(out))
+	}
 	// 不允许并发发送
 	b.sendLock.Lock()
-	err := b.ws.WriteJSON(request)
+	err := b.ws.WriteMessage(websocket.TextMessage, out)
 	b.sendLock.Unlock()
 	if err != nil {
 		return nil, err

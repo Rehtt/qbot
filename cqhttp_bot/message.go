@@ -23,6 +23,7 @@
 package cqhttp_bot
 
 import (
+	"encoding/base64"
 	"fmt"
 	"strings"
 	"sync"
@@ -60,7 +61,7 @@ func ParseMessage(raw string) (m Messages) {
 			cq := strings.Split(raw[:feet], ",")
 			switch cq[0] {
 			case "[CQ:image": // 图片
-				m = append(m, ImageMessage(data["file"], data["url"], data["type"] == "flash"))
+				m = append(m, ImageMessage(data["file"], data["url"], nil, data["type"] == "flash"))
 			case "[CQ:face": // 表情
 			case "[CQ:reply": // 回复
 				m = append(m, ReplyMessage(data["id"]))
@@ -100,12 +101,14 @@ func AtMessage(qid any, name ...string) Message {
 	return m
 }
 
-func ImageMessage(file, url string, flash bool) Message {
+// ImageMessage file,url,src 三选一。优先级：src > url > file
+func ImageMessage(file, url string, src []byte, flash bool) Message {
 	return Message{
 		Type: IMAGE,
 		Image: &messageImage{
 			Url:   url,
 			File:  file,
+			Src:   src,
 			Flash: flash,
 		},
 	}
@@ -128,8 +131,8 @@ func (m *Messages) AtMessage(qid any, name ...string) Messages {
 	return m.Add(AtMessage(qid, name...))
 }
 
-func (m *Messages) ImageMessage(file, url string, flash bool) Messages {
-	return m.Add(ImageMessage(file, url, flash))
+func (m *Messages) ImageMessage(file, url string, src []byte, flash bool) Messages {
+	return m.Add(ImageMessage(file, url, src, flash))
 }
 func (m *Messages) ReplyMessage(messageId string) Messages {
 	return m.Add(ReplyMessage(messageId))
@@ -151,6 +154,9 @@ func (m *Messages) RawMessage() string {
 			var file = msg.Image.File
 			if file == "" && msg.Image.Url != "" {
 				file = msg.Image.Url
+			}
+			if len(msg.Image.Src) != 0 {
+				file = "base64://" + base64.StdEncoding.EncodeToString(msg.Image.Src)
 			}
 			out.WriteString(fmt.Sprintf("[CQ:image,file=%s,type=%s]", file, imageType))
 		case TEXT:

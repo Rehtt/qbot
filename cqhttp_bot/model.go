@@ -58,10 +58,13 @@ type EventMessageContext struct {
 	MessageId   int32
 	MessageType EventMessageType
 	SenderId    int64
+	Sender      Sender
 	GroupId     int64
 	Message     *EventMessage
 }
-
+type Sender struct {
+	Nickname string
+}
 type EventMessage struct {
 	RawMessage string
 	Messages   []Message
@@ -85,6 +88,7 @@ type Message struct {
 type messageImage struct {
 	Url   string
 	File  string
+	Src   []byte
 	Flash bool
 }
 type messageAt struct {

@@ -33,10 +33,10 @@ func main() {
 	bot := cqhttp_bot.New("ws://127.0.0.1:8060")
 	bot.Start()
 	fmt.Println(bot.GetFriendsList())
-	bot.Event.OnPrivateMessage(func(messageId int32, userId int64, message cqhttp_bot.EventMessage) {
+	bot.Event.OnPrivateMessage(func(messageId int32, userId int64, message *cqhttp_bot.EventMessage) {
 		fmt.Println(userId, message.Messages, message.RawMessage)
 	})
-	bot.Event.OnGroupMessage(func(messageId int32, senderQid, groupId int64, message cqhttp_bot.EventMessage) {
+	bot.Event.OnGroupMessage(func(messageId int32, senderQid, groupId int64, message *cqhttp_bot.EventMessage) {
 		fmt.Println(senderQid, groupId, message.Messages, message.RawMessage)
 	})
 	bot.SendMsg(852122585, cqhttp_bot.MessageArray(cqhttp_bot.TextMessage("test")), cqhttp_bot.Group)

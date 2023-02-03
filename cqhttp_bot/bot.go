@@ -51,6 +51,7 @@ func New(addr string, options ...Option) (b *Bot) {
 	b.ws = conn
 	b.Action.ws = conn
 	b.Options = loadOptions(options...)
+	b.Action.options = b.Options
 	return
 }
 func (b *Bot) handle() {

@@ -54,6 +54,9 @@ func (b *MessageEvent) eventMessage(data jsoniter.Any) {
 
 	ctx.MessageId = messageId
 	ctx.SenderId = senderQid
+	ctx.Sender = Sender{
+		Nickname: data.Get("sender", "nickname").ToString(),
+	}
 	ctx.Message = m
 	ctx.GroupId = 0
 
