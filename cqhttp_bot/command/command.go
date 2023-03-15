@@ -8,6 +8,7 @@ import (
 
 type Cmd struct {
 	bot      *cqhttp_bot.Bot
+	trigger  string
 	Commands Commands
 }
 type Commands map[string]*Command
@@ -24,8 +25,14 @@ type RunFunc func(paramete string, flag Flag, bot *cqhttp_bot.Bot, ctx *cqhttp_b
 func New(bot *cqhttp_bot.Bot) (c *Cmd) {
 	c = new(Cmd)
 	c.bot = bot
+	c.trigger = "/"
 	c.run()
 	return
+}
+
+// Trigger 触发解析命令的字段，默认：/
+func (c *Cmd) Trigger(t string) {
+	c.trigger = t
 }
 func (c *Cmd) run() {
 	c.bot.OnMessage(func(ctx *cqhttp_bot.EventMessageContext) {
@@ -34,7 +41,7 @@ func (c *Cmd) run() {
 }
 func (c *Cmd) parseMessage(ctx *cqhttp_bot.EventMessageContext) {
 	for _, m := range ctx.Message.Messages {
-		if m.Type == cqhttp_bot.TEXT && m.Text[0] == '/' {
+		if m.Type == cqhttp_bot.TEXT && strings.HasPrefix(m.Text, c.trigger) {
 			com, arg, p := c.Commands.Parse(m.Text[1:])
 			//com, arg, p := parseCommand(m.Text[1:], c.Commands, nil)
 			if com != nil {
