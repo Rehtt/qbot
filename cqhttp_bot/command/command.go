@@ -62,9 +62,25 @@ func (c Commands) Parse(str string) (co *Command, f Flag, p string) {
 			})
 		}
 	}()
+	var flagValueTmp strings.Builder
 	for i := 0; i < len(fields); i++ {
 		s := fields[i]
 		if flagName != "" {
+			if l := len(s); l > 1 {
+				if s[0] == '"' && flagValueTmp.Len() == 0 {
+					flagValueTmp.WriteString(s[1:])
+					flagValueTmp.WriteString(" ")
+					continue
+				} else if s[l-1] == '"' && flagValueTmp.Len() != 0 {
+					flagValueTmp.WriteString(s[:l])
+					s = flagValueTmp.String()
+					flagValueTmp.Reset()
+				} else if flagValueTmp.Len() != 0 {
+					flagValueTmp.WriteString(s)
+					flagValueTmp.WriteString(" ")
+					continue
+				}
+			}
 			f.set(flagName, s)
 			flagName = ""
 			continue
