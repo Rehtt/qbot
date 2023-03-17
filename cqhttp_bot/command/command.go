@@ -72,7 +72,7 @@ func (c Commands) Parse(str string) (co *Command, f Flag, p string) {
 					flagValueTmp.WriteString(" ")
 					continue
 				} else if s[l-1] == '"' && flagValueTmp.Len() != 0 {
-					flagValueTmp.WriteString(s[:l])
+					flagValueTmp.WriteString(s[:l-1])
 					s = flagValueTmp.String()
 					flagValueTmp.Reset()
 				} else if flagValueTmp.Len() != 0 {
