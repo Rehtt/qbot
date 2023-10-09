@@ -40,6 +40,7 @@ func (e *EventMessage) Close() {
 	e.Messages = nil
 	eventMessagePool.Put(e)
 }
+
 func NewEventMessage() *EventMessage {
 	return eventMessagePool.Get().(*EventMessage)
 }
@@ -78,9 +79,11 @@ func ParseMessage(raw string) (m Messages) {
 	}
 	return
 }
+
 func MessageArray(msg ...Message) Messages {
 	return msg
 }
+
 func TextMessage(text string) Message {
 	return Message{
 		Type: TEXT,
@@ -113,6 +116,7 @@ func ImageMessage(file, url string, src []byte, flash bool) Message {
 		},
 	}
 }
+
 func ReplyMessage(messageId string) Message {
 	return Message{
 		Type: Reply,
@@ -124,9 +128,11 @@ func (m *Messages) Add(msg Message) Messages {
 	*m = append(*m, msg)
 	return *m
 }
+
 func (m *Messages) TextMessage(text string) Messages {
 	return m.Add(TextMessage(text))
 }
+
 func (m *Messages) AtMessage(qid any, name ...string) Messages {
 	return m.Add(AtMessage(qid, name...))
 }
@@ -134,9 +140,11 @@ func (m *Messages) AtMessage(qid any, name ...string) Messages {
 func (m *Messages) ImageMessage(file, url string, src []byte, flash bool) Messages {
 	return m.Add(ImageMessage(file, url, src, flash))
 }
+
 func (m *Messages) ReplyMessage(messageId string) Messages {
 	return m.Add(ReplyMessage(messageId))
 }
+
 func (m *Messages) RawMessage() string {
 	var out strings.Builder
 	for _, msg := range *m {
@@ -147,11 +155,11 @@ func (m *Messages) RawMessage() string {
 			if msg.Image == nil {
 				continue
 			}
-			var imageType = "show"
+			imageType := "show"
 			if msg.Image.Flash {
 				imageType = "flash"
 			}
-			var file = msg.Image.File
+			file := msg.Image.File
 			if file == "" && msg.Image.Url != "" {
 				file = msg.Image.Url
 			}
@@ -185,6 +193,7 @@ func NewEventMessageContext() *EventMessageContext {
 	e := eventMessageContextPool.Get().(*EventMessageContext)
 	return e
 }
+
 func (e *EventMessageContext) Close() {
 	eventMessageContextPool.Put(e)
 }

@@ -31,9 +31,10 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
-	jsoniter "github.com/json-iterator/go"
 	"strings"
 	"time"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 // GenCode 生成唯一编码
@@ -42,12 +43,13 @@ func GenCode(data []byte) string {
 	s.Write(data)
 	s.Write([]byte(time.Now().String()))
 
-	var tmp = make([]byte, 20)
+	tmp := make([]byte, 20)
 	rand.Read(tmp)
 	s.Write(tmp)
 
 	return base64.StdEncoding.EncodeToString(s.Sum(nil))
 }
+
 func parse(raw string) (out map[string]string) {
 	out = make(map[string]string)
 	for _, r := range strings.Split(raw, ",") {

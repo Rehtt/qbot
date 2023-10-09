@@ -78,13 +78,16 @@ const (
 	At
 )
 
-type Messages []Message
-type Message struct {
-	Type  MessageType
-	Image *messageImage
-	At    *messageAt
-	Text  string
-}
+type (
+	Messages []Message
+	Message  struct {
+		Type  MessageType
+		Image *messageImage
+		At    *messageAt
+		Text  string
+	}
+)
+
 type messageImage struct {
 	Url   string
 	File  string
@@ -101,19 +104,21 @@ type Event struct {
 	RequestEvent
 }
 type MessageEvent struct {
-	onGroupMessages   []onGroupMessage
-	onPrivateMessages []onPrivateMessage
-	onMessage         []onMessage
+	onGroupMessages   []OnGroupMessageFunc
+	onPrivateMessages []OnPrivateMessageFunc
+	onMessage         []OnMessageFunc
 }
 type RequestEvent struct {
-	onFriendRequests []onFriendRequest
-	onGroupRequests  []onGroupRequest
+	onFriendRequests []OnFriendRequestFunc
+	onGroupRequests  []OnGroupRequestFunc
 }
-type onGroupMessage func(messageId int32, senderQid, groupId int64, message *EventMessage)
-type onPrivateMessage func(messageId int32, userId int64, message *EventMessage)
-type onMessage func(ctx *EventMessageContext)
-type onFriendRequest func(userId int64, comment string, flag string)
-type onGroupRequest func(userId, groupId int64, requestType GroupRequestEventSubType, comment, flag string)
+type (
+	OnGroupMessageFunc   func(messageId int32, senderQid, groupId int64, message *EventMessage)
+	OnPrivateMessageFunc func(messageId int32, userId int64, message *EventMessage)
+	OnMessageFunc        func(ctx *EventMessageContext)
+	OnFriendRequestFunc  func(userId int64, comment string, flag string)
+	OnGroupRequestFunc   func(userId, groupId int64, requestType GroupRequestEventSubType, comment, flag string)
+)
 
 type GroupRequestEventSubType string
 

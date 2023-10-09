@@ -62,9 +62,7 @@ func (b *MessageEvent) eventMessage(data jsoniter.Any) {
 
 	switch data.Get("message_type").ToString() {
 	case "group":
-		var (
-			groupId = data.Get("group_id").ToInt64()
-		)
+		groupId := data.Get("group_id").ToInt64()
 		for i := range b.onGroupMessages {
 			b.onGroupMessages[i](messageId, senderQid, groupId, m)
 		}
@@ -82,17 +80,17 @@ func (b *MessageEvent) eventMessage(data jsoniter.Any) {
 }
 
 // OnMessage 接收所有消息
-func (b *MessageEvent) OnMessage(f onMessage) {
+func (b *MessageEvent) OnMessage(f OnMessageFunc) {
 	b.onMessage = append(b.onMessage, f)
 }
 
 // OnGroupMessage 接收群消息
-func (b *MessageEvent) OnGroupMessage(f onGroupMessage) {
+func (b *MessageEvent) OnGroupMessage(f OnGroupMessageFunc) {
 	b.onGroupMessages = append(b.onGroupMessages, f)
 }
 
 // OnPrivateMessage 接收私人消息
-func (b *MessageEvent) OnPrivateMessage(f onPrivateMessage) {
+func (b *MessageEvent) OnPrivateMessage(f OnPrivateMessageFunc) {
 	b.onPrivateMessages = append(b.onPrivateMessages, f)
 }
 
@@ -116,9 +114,11 @@ func (r *RequestEvent) eventRequest(data jsoniter.Any) {
 		}
 	}
 }
-func (r *RequestEvent) OnFriendRequest(f onFriendRequest) {
+
+func (r *RequestEvent) OnFriendRequest(f OnFriendRequestFunc) {
 	r.onFriendRequests = append(r.onFriendRequests, f)
 }
-func (r *RequestEvent) OnGroupRequest(f onGroupRequest) {
+
+func (r *RequestEvent) OnGroupRequest(f OnGroupRequestFunc) {
 	r.onGroupRequests = append(r.onGroupRequests, f)
 }

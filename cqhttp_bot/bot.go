@@ -28,10 +28,11 @@
 package cqhttp_bot
 
 import (
+	"log"
+
 	"github.com/gorilla/websocket"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/panjf2000/ants/v2"
-	"log"
 )
 
 type Bot struct {
@@ -54,6 +55,7 @@ func New(addr string, options ...Option) (b *Bot) {
 	b.Action.options = b.Options
 	return
 }
+
 func (b *Bot) handle() {
 	ws := b.ws
 	if b.handleThreadNum == 0 {

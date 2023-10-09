@@ -25,13 +25,14 @@ package cqhttp_bot
 import (
 	"bytes"
 	"errors"
-	"github.com/gorilla/websocket"
-	jsoniter "github.com/json-iterator/go"
 	"log"
 	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/gorilla/websocket"
+	jsoniter "github.com/json-iterator/go"
 )
 
 type Action struct {
@@ -72,7 +73,6 @@ func (b *Action) action(action string, data any) (jsoniter.Any, error) {
 			return response.Get("data"), nil
 		}
 	}
-
 }
 
 // GetFriendsList 获取好友列表
@@ -131,7 +131,7 @@ func (b *Action) GetMsg(messageId string) (message *Message, err error) {
 }
 
 func (b *Action) SetFriendAddRequest(flag string, approve bool, remark ...string) error {
-	var tmp = struct {
+	tmp := struct {
 		Flag    string `json:"flag"`
 		Approve bool   `json:"approve"`
 		Remark  string `json:"remark,omitempty"` // 备注
@@ -145,8 +145,9 @@ func (b *Action) SetFriendAddRequest(flag string, approve bool, remark ...string
 	_, err := b.action("set_friend_add_request", tmp)
 	return err
 }
+
 func (b *Action) SetGroupAddRequest(flag string, subType GroupRequestEventSubType, approve bool, reason ...string) error {
-	var tmp = struct {
+	tmp := struct {
 		Flag    string                   `json:"flag"`
 		Approve bool                     `json:"approve"`
 		Reason  string                   `json:"reason,omitempty"` // 拒绝理由

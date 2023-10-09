@@ -12,6 +12,7 @@ func WithHandleThreadNum(n int) Option {
 		options.handleThreadNum = n
 	}
 }
+
 func WithDebug(n bool) Option {
 	return func(options *Options) {
 		options.debug = n

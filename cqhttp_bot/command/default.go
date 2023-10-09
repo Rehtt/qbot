@@ -2,6 +2,7 @@ package command
 
 import (
 	"fmt"
+
 	"github.com/Rehtt/qbot/cqhttp_bot"
 )
 

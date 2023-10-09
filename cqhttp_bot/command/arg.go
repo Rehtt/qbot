@@ -23,6 +23,7 @@ func (f *Flag) Var(name, defaultValue, usage string) {
 		value: defaultValue,
 	}
 }
+
 func (f Flag) Get(name string) (string, bool) {
 	if a, ok := f.args[name]; ok {
 		return a.value, true
@@ -30,6 +31,7 @@ func (f Flag) Get(name string) (string, bool) {
 		return "", false
 	}
 }
+
 func (f Flag) GetInt(name string) (int, bool) {
 	if s, ok := f.Get(name); !ok {
 		return 0, ok
@@ -41,11 +43,13 @@ func (f Flag) GetInt(name string) (int, bool) {
 		return n, true
 	}
 }
+
 func (f Flag) Range(fun func(name, value, usage string)) {
 	for _, v := range f.args {
 		fun(v.name, v.value, v.usage)
 	}
 }
+
 func (f *Flag) set(name, value string) {
 	if a, ok := f.args[name]; ok {
 		a.value = value
