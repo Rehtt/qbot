@@ -145,6 +145,8 @@ func (m *Messages) ReplyMessage(messageId string) Messages {
 	return m.Add(ReplyMessage(messageId))
 }
 
+// TODO 重构CQ解析与生成
+
 func (m *Messages) RawMessage() string {
 	var out strings.Builder
 	for _, msg := range *m {
@@ -178,6 +180,8 @@ func (m *Messages) RawMessage() string {
 				out.WriteString(fmt.Sprintf(",name=%s", msg.At.Name))
 			}
 			out.WriteString("]")
+		case Voice:
+			out.WriteString(fmt.Sprintf("[CQ:]"))
 		}
 	}
 	return out.String()

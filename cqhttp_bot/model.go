@@ -76,6 +76,7 @@ const (
 	IMAGE
 	Reply
 	At
+	Voice
 )
 
 type (
@@ -85,6 +86,7 @@ type (
 		Image *messageImage
 		At    *messageAt
 		Text  string
+		Voice *messageVoice
 	}
 )
 
@@ -98,6 +100,9 @@ type messageAt struct {
 	Qid  any
 	Name string // 当在群中找不到此QQ号的名称时才会生效
 }
+
+// TODO Voice
+type messageVoice struct{}
 
 type Event struct {
 	MessageEvent
