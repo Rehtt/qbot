@@ -44,7 +44,7 @@ func GenCode(data []byte) string {
 	s.Write([]byte(time.Now().String()))
 
 	tmp := make([]byte, 20)
-	rand.Read(tmp)
+	_, _ = rand.Read(tmp)
 	s.Write(tmp)
 
 	return base64.StdEncoding.EncodeToString(s.Sum(nil))
@@ -63,5 +63,5 @@ func parse(raw string) (out map[string]string) {
 
 func DeepCopy(dst, src any) {
 	o, _ := jsoniter.Marshal(src)
-	jsoniter.Unmarshal(o, dst)
+	_ = jsoniter.Unmarshal(o, dst)
 }

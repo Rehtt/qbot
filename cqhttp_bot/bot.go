@@ -76,7 +76,7 @@ func (b *Bot) handle() {
 		if err != nil {
 			log.Println("信息错误：", err)
 		}
-		h.Invoke(jsoniter.Get(msg))
+		_ = h.Invoke(jsoniter.Get(msg))
 	}
 }
 

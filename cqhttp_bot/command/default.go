@@ -24,7 +24,7 @@ func DefaultCommandHelp(c *Cmd) *Command {
 			} else {
 				help = c.Help()
 			}
-			ctx.QuickReplyText(bot, help, true)
+			_, _ = ctx.QuickReplyText(bot, help, true)
 			//switch ctx.MessageType {
 			//case cqhttp_bot.Private:
 			//	bot.SendPrivateMsg(ctx.SenderQid, help)

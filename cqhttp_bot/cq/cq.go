@@ -94,10 +94,12 @@ func MarshalToString(v CQStruct) (string, error) {
 }
 
 func Parse(data []byte) (CQStruct, error) {
-	if !bytes.HasPrefix(data, r_strings.ToBytes(CQHeadr)) {
+	if !bytes.HasPrefix(data, r_strings.ToBytes(CQHeadr)) || data[len(data)-1] != ']' {
 		return nil, ErrorNotCQCode
 	}
-	split := strings.Split(r_strings.ToString(data), ",")
+	dataStr := strings.TrimPrefix(r_strings.ToString(data[:len(data)-1]), CQHeadr)
+
+	split := strings.Split(dataStr, ",")
 	switch split[0] {
 	case cqImage:
 		image := new(CQImage)

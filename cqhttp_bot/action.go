@@ -49,7 +49,7 @@ func (b *Action) action(action string, data any) (jsoniter.Any, error) {
 		Params: data,
 	}
 	var tmp bytes.Buffer
-	jsoniter.NewEncoder(&tmp).Encode(request)
+	_ = jsoniter.NewEncoder(&tmp).Encode(request)
 	tmp.WriteString(strconv.FormatInt(b.actionIndex.Add(1), 10))
 	request.Echo = GenCode(tmp.Bytes())
 	out, _ := jsoniter.Marshal(request)
