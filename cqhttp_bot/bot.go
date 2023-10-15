@@ -43,11 +43,11 @@ type Bot struct {
 }
 
 // New 实例化一个Bot对象
-func New(addr string, options ...Option) (b *Bot) {
+func New(addr string, options ...Option) (b *Bot, err error) {
 	b = new(Bot)
 	conn, _, err := websocket.DefaultDialer.Dial(addr, nil)
 	if err != nil {
-		log.Fatalln("链接websocket错误：", err)
+		return nil, err
 	}
 	b.ws = conn
 	b.Action.ws = conn
