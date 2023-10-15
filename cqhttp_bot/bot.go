@@ -76,6 +76,10 @@ func (b *Bot) handle() {
 		if err != nil {
 			log.Println("信息错误：", err)
 		}
+		if b.debug {
+			log.Println("qbot websocket msg: ", string(msg))
+		}
+
 		h.Invoke(jsoniter.Get(msg))
 	}
 }
