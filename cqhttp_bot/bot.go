@@ -29,6 +29,7 @@ package cqhttp_bot
 
 import (
 	"log"
+	"strings"
 
 	"github.com/gorilla/websocket"
 	jsoniter "github.com/json-iterator/go"
@@ -36,7 +37,8 @@ import (
 )
 
 type Bot struct {
-	ws *websocket.Conn
+	ws     *websocket.Conn
+	wsAddr string
 	*Options
 	Event
 	Action
@@ -45,12 +47,10 @@ type Bot struct {
 // New 实例化一个Bot对象
 func New(addr string, options ...Option) (b *Bot, err error) {
 	b = new(Bot)
-	conn, _, err := websocket.DefaultDialer.Dial(addr, nil)
+	err = b.openWS(addr)
 	if err != nil {
 		return nil, err
 	}
-	b.ws = conn
-	b.Action.ws = conn
 	b.Options = loadOptions(options...)
 	b.Action.options = b.Options
 	return
@@ -74,6 +74,11 @@ func (b *Bot) handle() {
 	for {
 		_, msg, err := ws.ReadMessage()
 		if err != nil {
+			if strings.Contains(err.Error(), "connection reset by peer") {
+				ws.Close()
+				b.openWS(b.wsAddr)
+				ws = b.ws
+			}
 			log.Println("信息错误：", err)
 		}
 		if b.debug {
@@ -92,4 +97,15 @@ func (b *Bot) Start() {
 // Run 已阻塞的方式运行
 func (b *Bot) Run() {
 	b.handle()
+}
+
+func (b *Bot) openWS(addr string) error {
+	conn, _, err := websocket.DefaultDialer.Dial(addr, nil)
+	if err != nil {
+		return err
+	}
+	b.wsAddr = addr
+	b.ws = conn
+	b.Action.ws = conn
+	return nil
 }
