@@ -43,6 +43,10 @@ type Action struct {
 	options     *Options
 }
 
+func (b *Action) Send(action string, data any) (jsoniter.Any, error) {
+	return b.action(action, data)
+}
+
 func (b *Action) action(action string, data any) (jsoniter.Any, error) {
 	request := actionRequest{
 		Action: action,
