@@ -66,6 +66,7 @@ func (b *MessageEvent) eventMessage(data jsoniter.Any) {
 	ctx.SenderId = senderQid
 	ctx.Sender = Sender{
 		Nickname: data.Get("sender", "nickname").ToString(),
+		Card:     data.Get("sender", "card").ToString(),
 	}
 	ctx.Time = time.Unix(data.Get("time").ToInt64(), 0)
 	ctx.Message = m

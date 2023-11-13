@@ -79,6 +79,7 @@ type EventMessageContext struct {
 }
 type Sender struct {
 	Nickname string
+	Card     string
 }
 type EventMessage struct {
 	RawMessage string
