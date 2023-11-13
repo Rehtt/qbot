@@ -28,7 +28,6 @@
 package cqhttp_bot
 
 import (
-	"log"
 	"strings"
 
 	"github.com/gorilla/websocket"
@@ -76,16 +75,14 @@ func (b *Bot) handle() {
 		if err != nil {
 			if strings.Contains(err.Error(), "connection reset by peer") {
 				ws.Close()
-				b.openWS(b.wsAddr)
+				_ = b.openWS(b.wsAddr)
 				ws = b.ws
 			}
-			log.Println("信息错误：", err)
+			b.Log().Error("bot handle", "信息错误", err)
 		}
-		if b.debug {
-			log.Println("qbot websocket msg: ", string(msg))
-		}
+		b.Log().Debug("qbot websocket", "msg", string(msg))
 
-		h.Invoke(jsoniter.Get(msg))
+		_ = h.Invoke(jsoniter.Get(msg))
 	}
 }
 

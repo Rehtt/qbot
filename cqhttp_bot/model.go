@@ -27,10 +27,24 @@
 
 package cqhttp_bot
 
+import (
+	"time"
+)
+
 type Friend struct {
 	UserId   int64  `json:"user_id"`
 	Nickname string `json:"nickname"`
 	Remark   string `json:"remark"`
+}
+
+type SelfInfo struct {
+	UserId   int64  `json:"user_id"`
+	Nickname string `json:"nickname"`
+
+	Company      string `json:"company"`
+	Email        string `json:"email"`
+	College      string `json:"college"`
+	PersonalNote string `json:"personal_note"`
 }
 
 type actionRequest struct {
@@ -57,6 +71,7 @@ type Msg struct {
 type EventMessageContext struct {
 	MessageId   int32
 	MessageType EventMessageType
+	Time        time.Time
 	SenderId    int64
 	Sender      Sender
 	GroupId     int64
@@ -74,8 +89,9 @@ type MessageType uint8
 const (
 	TEXT = MessageType(iota) + 1
 	IMAGE
-	Reply
-	At
+	REPLY
+	AT
+	VIDEO
 )
 
 type (
@@ -85,8 +101,14 @@ type (
 		Image *messageImage
 		At    *messageAt
 		Text  string
+		Video *messageVideo
 	}
 )
+
+type messageVideo struct {
+	File string
+	Url  string
+}
 
 type messageImage struct {
 	Url   string
@@ -102,6 +124,7 @@ type messageAt struct {
 type Event struct {
 	MessageEvent
 	RequestEvent
+	NoticeEvent
 }
 type MessageEvent struct {
 	onGroupMessages   []OnGroupMessageFunc
@@ -112,6 +135,7 @@ type RequestEvent struct {
 	onFriendRequests []OnFriendRequestFunc
 	onGroupRequests  []OnGroupRequestFunc
 }
+type NoticeEvent struct{}
 type (
 	OnGroupMessageFunc   func(messageId int32, senderQid, groupId int64, message *EventMessage)
 	OnPrivateMessageFunc func(messageId int32, userId int64, message *EventMessage)

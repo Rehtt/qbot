@@ -28,8 +28,9 @@ import (
 )
 
 func TestGenCode(t *testing.T) {
-	t.Log(GenCode([]byte("123")))
-	if GenCode([]byte("123")) == GenCode([]byte("123")) {
+	a := GenCode([]byte("123"))
+	b := GenCode([]byte("123"))
+	if a == b {
 		t.Error("重复")
 	} else {
 		t.Log("通过")

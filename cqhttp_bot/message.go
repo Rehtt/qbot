@@ -68,6 +68,8 @@ func ParseMessage(raw string) (m Messages) {
 				m = append(m, ReplyMessage(data["id"]))
 			case "[CQ:at": // @
 				m = append(m, AtMessage(data["qq"]))
+			case "[CQ:video": // 视频
+				m = append(m, VideoMessage(data["file"], data["url"]))
 			}
 			raw = raw[feet+1:]
 		} else if index == -1 {
@@ -91,13 +93,24 @@ func TextMessage(text string) Message {
 	}
 }
 
+func VideoMessage(file, url string) Message {
+	return Message{
+		Type: VIDEO,
+		Video: &messageVideo{
+			File: file,
+			Url:  url,
+		},
+	}
+}
+
 func AtMessage(qid any, name ...string) Message {
 	m := Message{
-		Type: At,
+		Type: AT,
 		At: &messageAt{
 			Qid: qid,
 		},
 	}
+	// todo
 	if len(name) != 0 && name[0] != "" {
 		m.At.Name = name[0]
 	}
@@ -119,7 +132,7 @@ func ImageMessage(file, url string, src []byte, flash bool) Message {
 
 func ReplyMessage(messageId string) Message {
 	return Message{
-		Type: Reply,
+		Type: REPLY,
 		Text: messageId,
 	}
 }
@@ -149,7 +162,7 @@ func (m *Messages) RawMessage() string {
 	var out strings.Builder
 	for _, msg := range *m {
 		switch msg.Type {
-		case Reply:
+		case REPLY:
 			out.WriteString(fmt.Sprintf("[CQ:reply,id=%s]", msg.Text))
 		case IMAGE:
 			if msg.Image == nil {
@@ -169,7 +182,7 @@ func (m *Messages) RawMessage() string {
 			out.WriteString(fmt.Sprintf("[CQ:image,file=%s,type=%s]", file, imageType))
 		case TEXT:
 			out.WriteString(msg.Text)
-		case At:
+		case AT:
 			if msg.At == nil {
 				continue
 			}

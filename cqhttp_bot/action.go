@@ -25,7 +25,6 @@ package cqhttp_bot
 import (
 	"bytes"
 	"errors"
-	"log"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -41,6 +40,7 @@ type Action struct {
 	actionIndex atomic.Int64
 	sendLock    sync.Mutex
 	options     *Options
+	cache       sync.Map
 }
 
 func (b *Action) Send(action string, data any) (jsoniter.Any, error) {
@@ -53,13 +53,11 @@ func (b *Action) action(action string, data any) (jsoniter.Any, error) {
 		Params: data,
 	}
 	var tmp bytes.Buffer
-	jsoniter.NewEncoder(&tmp).Encode(request)
+	_ = jsoniter.NewEncoder(&tmp).Encode(request)
 	tmp.WriteString(strconv.FormatInt(b.actionIndex.Add(1), 10))
 	request.Echo = GenCode(tmp.Bytes())
 	out, _ := jsoniter.Marshal(request)
-	if b.options != nil && b.options.debug {
-		log.Println("qbot action: ", string(out))
-	}
+	b.options.Log().Debug("qbot action", "msg", string(out))
 	// 不允许并发发送
 	b.sendLock.Lock()
 	err := b.ws.WriteMessage(websocket.TextMessage, out)
@@ -166,4 +164,27 @@ func (b *Action) SetGroupAddRequest(flag string, subType GroupRequestEventSubTyp
 	}
 	_, err := b.action("set_group_add_request", tmp)
 	return err
+}
+
+func (b *Action) GetSelfInfo() (*SelfInfo, error) {
+	userId, ok := b.cache.Load("user_id")
+	if !ok {
+		loginInfo, err := b.action("get_login_info", nil)
+		if err != nil {
+			return nil, err
+		}
+		userId = loginInfo.Get("user_id").ToInt64()
+	}
+	info, err := b.action("set_qq_profile", nil)
+	if err != nil {
+		return nil, err
+	}
+	return &SelfInfo{
+		UserId:       userId.(int64),
+		Nickname:     info.Get("nick_name").ToString(),
+		Company:      info.Get("company").ToString(),
+		Email:        info.Get("email").ToString(),
+		College:      info.Get("college").ToString(),
+		PersonalNote: info.Get("personal_note").ToString(),
+	}, nil
 }

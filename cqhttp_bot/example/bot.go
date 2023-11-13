@@ -24,13 +24,17 @@ package main
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/Rehtt/qbot/cqhttp_bot"
 	"github.com/Rehtt/qbot/cqhttp_bot/command"
-	"time"
 )
 
 func main() {
-	bot := cqhttp_bot.New("ws://127.0.0.1:8060")
+	bot, err := cqhttp_bot.New("ws://127.0.0.1:8060")
+	if err != nil {
+		panic(err)
+	}
 	bot.Start()
 	fmt.Println(bot.GetFriendsList())
 	bot.Event.OnPrivateMessage(func(messageId int32, userId int64, message *cqhttp_bot.EventMessage) {
@@ -39,7 +43,7 @@ func main() {
 	bot.Event.OnGroupMessage(func(messageId int32, senderQid, groupId int64, message *cqhttp_bot.EventMessage) {
 		fmt.Println(senderQid, groupId, message.Messages, message.RawMessage)
 	})
-	bot.SendMsg(852122585, cqhttp_bot.MessageArray(cqhttp_bot.TextMessage("test")), cqhttp_bot.Group)
+	_, _ = bot.SendMsg(852122585, cqhttp_bot.MessageArray(cqhttp_bot.TextMessage("test")), cqhttp_bot.Group)
 
 	// 开启命令模式
 	c := command.New(bot)

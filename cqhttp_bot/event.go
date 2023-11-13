@@ -23,12 +23,14 @@
 package cqhttp_bot
 
 import (
+	"time"
+
 	jsoniter "github.com/json-iterator/go"
 )
 
 func (b *Event) event(postType string, data jsoniter.Any) {
 	switch postType {
-	case "message":
+	case "message", "message_sent":
 		if len(b.onMessage) == 0 && len(b.onPrivateMessages) == 0 && len(b.onGroupMessages) == 0 {
 			break
 		}
@@ -37,7 +39,15 @@ func (b *Event) event(postType string, data jsoniter.Any) {
 		// 暂时忽略
 	case "request":
 		b.RequestEvent.eventRequest(data)
+	case "notice":
+		b.NoticeEvent.eventNotice(data)
 	}
+}
+
+func (b *NoticeEvent) eventNotice(data jsoniter.Any) {
+	// todo 事件
+	// todo 消息撤回
+	// {"post_type":"notice","notice_type":"group_recall","time":1699759315,"self_id":1033853263,"group_id":852122585,"user_id":1033853263,"operator_id":1033853263,"message_id":1258115355}}
 }
 
 func (b *MessageEvent) eventMessage(data jsoniter.Any) {
@@ -57,6 +67,7 @@ func (b *MessageEvent) eventMessage(data jsoniter.Any) {
 	ctx.Sender = Sender{
 		Nickname: data.Get("sender", "nickname").ToString(),
 	}
+	ctx.Time = time.Unix(data.Get("time").ToInt64(), 0)
 	ctx.Message = m
 	ctx.GroupId = 0
 
