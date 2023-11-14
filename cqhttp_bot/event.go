@@ -75,7 +75,7 @@ func (b *NoticeEvent) eventNotice(data jsoniter.Any) {
 	// {"post_type":"notice","notice_type":"group_recall","time":1699759315,"self_id":1033853263,"group_id":852122585,"user_id":1033853263,"operator_id":1033853263,"message_id":1258115355}}
 }
 
-func (b *MessageEvent) eventMessage(data jsoniter.Any) {
+func (b *MessageEvent) ParseEventMessage(data jsoniter.Any) *EventMessageContext {
 	var (
 		senderQid = data.Get("user_id").ToInt64()
 		messageId = data.Get("message_id").ToInt32()
@@ -111,6 +111,11 @@ func (b *MessageEvent) eventMessage(data jsoniter.Any) {
 		}
 		ctx.MessageType = Private
 	}
+	return ctx
+}
+
+func (b *MessageEvent) eventMessage(data jsoniter.Any) {
+	ctx := b.ParseEventMessage(data)
 	for i := range b.onMessage {
 		b.onMessage[i](ctx)
 	}
