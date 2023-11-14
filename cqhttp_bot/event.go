@@ -75,7 +75,7 @@ func (b *NoticeEvent) eventNotice(data jsoniter.Any) {
 	// {"post_type":"notice","notice_type":"group_recall","time":1699759315,"self_id":1033853263,"group_id":852122585,"user_id":1033853263,"operator_id":1033853263,"message_id":1258115355}}
 }
 
-func (b *MessageEvent) ParseEventMessage(data jsoniter.Any) *EventMessageContext {
+func ParseEventMessage(data jsoniter.Any) *EventMessageContext {
 	var (
 		senderQid = data.Get("user_id").ToInt64()
 		messageId = data.Get("message_id").ToInt32()
@@ -100,22 +100,27 @@ func (b *MessageEvent) ParseEventMessage(data jsoniter.Any) *EventMessageContext
 	switch data.Get("message_type").ToString() {
 	case "group":
 		groupId := data.Get("group_id").ToInt64()
-		for i := range b.onGroupMessages {
-			b.onGroupMessages[i](messageId, senderQid, groupId, m)
-		}
 		ctx.MessageType = Group
 		ctx.GroupId = groupId
 	case "private":
-		for i := range b.onPrivateMessages {
-			b.onPrivateMessages[i](messageId, senderQid, m)
-		}
 		ctx.MessageType = Private
 	}
 	return ctx
 }
 
 func (b *MessageEvent) eventMessage(data jsoniter.Any) {
-	ctx := b.ParseEventMessage(data)
+	ctx := ParseEventMessage(data)
+	switch ctx.MessageType {
+	case Group:
+		for i := range b.onGroupMessages {
+			b.onGroupMessages[i](ctx.MessageId, ctx.SenderId, ctx.GroupId, ctx.Message)
+		}
+	case Private:
+		for i := range b.onPrivateMessages {
+			b.onPrivateMessages[i](ctx.MessageId, ctx.SenderId, ctx.Message)
+		}
+
+	}
 	for i := range b.onMessage {
 		b.onMessage[i](ctx)
 	}
