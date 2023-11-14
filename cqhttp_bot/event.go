@@ -82,8 +82,6 @@ func ParseEventMessage(data jsoniter.Any) *EventMessageContext {
 		m         = NewEventMessage()
 		ctx       = NewEventMessageContext()
 	)
-	defer m.Close()
-	defer ctx.Close()
 	m.RawMessage = data.Get("message").ToString()
 	if rawMsg := data.Get("raw_message").ToString(); rawMsg != "" {
 		m.RawMessage = rawMsg
@@ -114,6 +112,9 @@ func ParseEventMessage(data jsoniter.Any) *EventMessageContext {
 
 func (b *MessageEvent) eventMessage(data jsoniter.Any) {
 	ctx := ParseEventMessage(data)
+	defer ctx.Message.Close()
+	defer ctx.Close()
+
 	switch ctx.MessageType {
 	case Group:
 		for i := range b.onGroupMessages {
