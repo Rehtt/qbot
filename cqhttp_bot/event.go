@@ -43,18 +43,21 @@ func (b *Event) event(postType string, data jsoniter.Any) {
 		b.NoticeEvent.eventNotice(data)
 	}
 
-	for _, event := range []string{postType, ""} {
-		for _, f := range b.callback[event] {
-			f(postType, data)
+	if b.callback != nil {
+		for _, event := range []string{postType, ""} {
+			for _, f := range b.callback[event] {
+				f(postType, data)
+			}
 		}
 	}
 }
 
-// 事件回调
+// 所有事件回调
 func (e *Event) AllEventCallback(f EventCallback) {
 	e.eventCallback("", f)
 }
 
+// 指定事件回调
 func (e *Event) SpecifyEventCallback(event string, f EventCallback) {
 	e.eventCallback(event, f)
 }
