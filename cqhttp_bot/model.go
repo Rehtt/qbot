@@ -29,6 +29,8 @@ package cqhttp_bot
 
 import (
 	"time"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 type Friend struct {
@@ -126,7 +128,14 @@ type Event struct {
 	MessageEvent
 	RequestEvent
 	NoticeEvent
+
+	callback map[string][]EventCallback
 }
+
+type (
+	EventCallback func(event string, data jsoniter.Any)
+)
+
 type MessageEvent struct {
 	onGroupMessages   []OnGroupMessageFunc
 	onPrivateMessages []OnPrivateMessageFunc

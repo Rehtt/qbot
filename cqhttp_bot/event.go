@@ -42,6 +42,28 @@ func (b *Event) event(postType string, data jsoniter.Any) {
 	case "notice":
 		b.NoticeEvent.eventNotice(data)
 	}
+
+	for _, event := range []string{postType, ""} {
+		for _, f := range b.callback[event] {
+			f(postType, data)
+		}
+	}
+}
+
+// 事件回调
+func (e *Event) AllEventCallback(f EventCallback) {
+	e.eventCallback("", f)
+}
+
+func (e *Event) SpecifyEventCallback(event string, f EventCallback) {
+	e.eventCallback(event, f)
+}
+
+func (e *Event) eventCallback(event string, f EventCallback) {
+	if e.callback == nil {
+		e.callback = make(map[string][]EventCallback)
+	}
+	e.callback[event] = append(e.callback[event], f)
 }
 
 func (b *NoticeEvent) eventNotice(data jsoniter.Any) {
