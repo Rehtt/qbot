@@ -89,7 +89,7 @@ func MessageArray(msg ...Message) Messages {
 func TextMessage(text string) Message {
 	return Message{
 		Type: TEXT,
-		Text: text,
+		Text: Unescape(text),
 	}
 }
 

@@ -77,14 +77,17 @@ func (b *NoticeEvent) eventNotice(data jsoniter.Any) {
 
 func ParseEventMessage(data jsoniter.Any) *EventMessageContext {
 	var (
-		senderQid = data.Get("user_id").ToInt64()
+		senderQid = data.Get("sender", "user_id").ToInt64()
 		messageId = data.Get("message_id").ToInt32()
 		m         = NewEventMessage()
 		ctx       = NewEventMessageContext()
 	)
 	defer m.Close()
 	defer ctx.Close()
-	m.RawMessage = data.Get("raw_message").ToString()
+	m.RawMessage = data.Get("message").ToString()
+	if rawMsg := data.Get("raw_message").ToString(); rawMsg != "" {
+		m.RawMessage = rawMsg
+	}
 	m.Messages = ParseMessage(m.RawMessage)
 
 	ctx.MessageId = messageId
@@ -92,6 +95,7 @@ func ParseEventMessage(data jsoniter.Any) *EventMessageContext {
 	ctx.Sender = Sender{
 		Nickname: data.Get("sender", "nickname").ToString(),
 		Card:     data.Get("sender", "card").ToString(),
+		UserId:   senderQid,
 	}
 	ctx.Time = time.Unix(data.Get("time").ToInt64(), 0)
 	ctx.Message = m

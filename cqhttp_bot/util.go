@@ -65,3 +65,12 @@ func DeepCopy(dst, src any) {
 	o, _ := jsoniter.Marshal(src)
 	_ = jsoniter.Unmarshal(o, dst)
 }
+
+func Unescape(str string) string {
+	return strings.NewReplacer(
+		"&#91;", "[",
+		"&#93;", "]",
+		"&amp;", "&",
+		"&#44;", ",",
+	).Replace(str)
+}
