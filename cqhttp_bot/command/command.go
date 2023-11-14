@@ -66,7 +66,7 @@ func (c *Cmd) run() {
 		if c.SelfQid == 0 {
 			info, err := c.bot.Action.GetSelfInfo()
 			if err != nil {
-				c.bot.Options.Log().ErrorContext("command GetSelfInfo", "error", err)
+				c.bot.Options.Log().Error("command GetSelfInfo", "error", err)
 				return
 			}
 			c.SelfQid = info.UserId
