@@ -72,6 +72,7 @@ type Msg struct {
 
 type EventMessageContext struct {
 	MessageId   int32
+	MessageSeq  int64 // 只有群消息有
 	MessageType EventMessageType
 	Time        time.Time
 	SenderId    int64

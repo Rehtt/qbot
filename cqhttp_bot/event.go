@@ -98,6 +98,7 @@ func ParseEventMessage(data jsoniter.Any) *EventMessageContext {
 	ctx.Time = time.Unix(data.Get("time").ToInt64(), 0)
 	ctx.Message = m
 	ctx.GroupId = 0
+	ctx.MessageSeq = data.Get("message_seq").ToInt64()
 
 	switch data.Get("message_type").ToString() {
 	case "group":
