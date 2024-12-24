@@ -24,11 +24,13 @@ package cqhttp_bot
 
 import (
 	"log/slog"
+	"net/http"
 )
 
 type Options struct {
 	handleThreadNum int
 	log             *slog.Logger
+	requestHead     http.Header
 }
 type Option func(options *Options)
 
@@ -42,6 +44,12 @@ func WithHandleThreadNum(n int) Option {
 func WithLogger(l *slog.Logger) Option {
 	return func(options *Options) {
 		options.log = l
+	}
+}
+
+func WithRequestHead(h http.Header) Option {
+	return func(options *Options) {
+		options.requestHead = h.Clone()
 	}
 }
 

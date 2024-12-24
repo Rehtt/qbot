@@ -46,11 +46,11 @@ type Bot struct {
 // New 实例化一个Bot对象
 func New(addr string, options ...Option) (b *Bot, err error) {
 	b = new(Bot)
+	b.Options = loadOptions(options...)
 	err = b.openWS(addr)
 	if err != nil {
 		return nil, err
 	}
-	b.Options = loadOptions(options...)
 	b.Action.options = b.Options
 	return
 }
@@ -97,7 +97,7 @@ func (b *Bot) Run() {
 }
 
 func (b *Bot) openWS(addr string) error {
-	conn, _, err := websocket.DefaultDialer.Dial(addr, nil)
+	conn, _, err := websocket.DefaultDialer.Dial(addr, b.requestHead)
 	if err != nil {
 		return err
 	}
