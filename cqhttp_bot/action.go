@@ -78,12 +78,25 @@ func (b *Action) action(action string, data any) (jsoniter.Any, error) {
 }
 
 // GetFriendsList 获取好友列表
-func (b *Action) GetFriendsList() ([]Friend, error) {
-	data, err := b.action("get_friend_list", nil)
+func (b *Action) GetFriendsList(noCache bool) ([]Friend, error) {
+	data, err := b.action("get_friend_list", map[string]any{
+		"no_cache": noCache,
+	})
 	if err != nil {
 		return nil, err
 	}
 	var fs []Friend
+	data.ToVal(&fs)
+	return fs, nil
+}
+
+// GetFriendsCategoryList 获取好友分组
+func (b *Action) GetFriendsCategoryList() ([]FriendCategory, error) {
+	data, err := b.action("get_friends_with_category", nil)
+	if err != nil {
+		return nil, err
+	}
+	var fs []FriendCategory
 	data.ToVal(&fs)
 	return fs, nil
 }
@@ -99,7 +112,7 @@ func (b *Action) GetFriendsList() ([]Friend, error) {
 func (b *Action) SendMsg(qid any, msg Messages, ty EventMessageType, autoEscape ...bool) (int32, error) {
 	m := Msg{
 		MessageType: ty,
-		Message:     msg.RawMessage(),
+		Message:     msg.OutputCQMessage(),
 	}
 	switch ty {
 	case Private:

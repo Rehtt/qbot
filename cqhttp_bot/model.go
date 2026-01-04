@@ -34,9 +34,26 @@ import (
 )
 
 type Friend struct {
-	UserId   int64  `json:"user_id"`
-	Nickname string `json:"nickname"`
-	Remark   string `json:"remark"`
+	UserId        int64  `json:"user_id"`
+	Nickname      string `json:"nickname"`
+	Remark        string `json:"remark"`
+	CategoryId    int64  `json:"category_id"`
+	Email         string `json:"email"`
+	Age           int    `json:"age"`
+	Sex           string `json:"sex"`
+	Level         int    `json:"level"`
+	BirthdayYear  int    `json:"birthday_year"`
+	BirthdayMonth int    `json:"birthday_month"`
+	BirthdayDay   int    `json:"birthday_day"`
+}
+
+type FriendCategory struct {
+	CategoryId      int64     `json:"categoryId"`
+	CategorySortId  int64     `json:"categorySortId"`
+	CategoryName    string    `json:"categoryName"`
+	CategoryMbCount int64     `json:"categoryMbCount"`
+	OnlineCount     int64     `json:"onlineCount"`
+	Friends         []*Friend `json:"buddyList"`
 }
 
 type SelfInfo struct {

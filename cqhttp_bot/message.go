@@ -158,12 +158,13 @@ func (m *Messages) ReplyMessage(messageId string) Messages {
 	return m.Add(ReplyMessage(messageId))
 }
 
-func (m *Messages) RawMessage() string {
+// OutputCQMessage 输出 CQ 码
+func (m *Messages) OutputCQMessage() string {
 	var out strings.Builder
 	for _, msg := range *m {
 		switch msg.Type {
 		case REPLY:
-			out.WriteString(fmt.Sprintf("[CQ:reply,id=%s]", msg.Text))
+			fmt.Fprintf(&out, "[CQ:reply,id=%s]", msg.Text)
 		case IMAGE:
 			if msg.Image == nil {
 				continue
@@ -179,21 +180,25 @@ func (m *Messages) RawMessage() string {
 			if len(msg.Image.Src) != 0 {
 				file = "base64://" + base64.StdEncoding.EncodeToString(msg.Image.Src)
 			}
-			out.WriteString(fmt.Sprintf("[CQ:image,file=%s,type=%s]", file, imageType))
+			fmt.Fprintf(&out, "[CQ:image,file=%s,type=%s]", file, imageType)
 		case TEXT:
 			out.WriteString(msg.Text)
 		case AT:
 			if msg.At == nil {
 				continue
 			}
-			out.WriteString(fmt.Sprintf("[CQ:at,qq=%v", msg.At.Qid))
+			fmt.Fprintf(&out, "[CQ:at,qq=%v", msg.At.Qid)
 			if msg.At.Name != "" {
-				out.WriteString(fmt.Sprintf(",name=%s", msg.At.Name))
+				fmt.Fprintf(&out, ",name=%s", msg.At.Name)
 			}
 			out.WriteString("]")
 		}
 	}
 	return out.String()
+}
+
+func (m *Messages) OutputArrayMessage() {
+	// TODO: 实现
 }
 
 var eventMessageContextPool = sync.Pool{
@@ -203,8 +208,7 @@ var eventMessageContextPool = sync.Pool{
 }
 
 func NewEventMessageContext() *EventMessageContext {
-	e := eventMessageContextPool.Get().(*EventMessageContext)
-	return e
+	return eventMessageContextPool.Get().(*EventMessageContext)
 }
 
 func (e *EventMessageContext) Close() {

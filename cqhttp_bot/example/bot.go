@@ -36,7 +36,7 @@ func main() {
 		panic(err)
 	}
 	bot.Start()
-	fmt.Println(bot.GetFriendsList())
+	fmt.Println(bot.GetFriendsList(true))
 	bot.Event.OnPrivateMessage(func(messageId int32, userId int64, message *cqhttp_bot.EventMessage) {
 		fmt.Println(userId, message.Messages, message.RawMessage)
 	})
