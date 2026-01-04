@@ -56,6 +56,23 @@ func WithRequestHead(h http.Header) Option {
 	}
 }
 
+func AddRequestHeader(key, value string) Option {
+	return func(options *Options) {
+		if options.requestHead == nil {
+			options.requestHead = make(http.Header)
+		}
+		options.requestHead.Add(key, value)
+	}
+}
+
+func WithAuthorizationBearer(token string) Option {
+	return AddRequestHeader("Authorization", fmt.Sprintf("Bearer %s", token))
+}
+
+func WithAuthorizationBasic(username, password string) Option {
+	return AddRequestHeader("Authorization", fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString(fmt.Appendf(nil, "%s:%s", username, password))))
+}
+
 func loadOptions(options ...Option) *Options {
 	o := new(Options)
 	for _, opt := range options {
@@ -69,21 +86,4 @@ func (o *Options) Log() *slog.Logger {
 		o.log = slog.Default()
 	}
 	return o.log
-}
-
-func (o *Options) AddRequestHeader(key, value string) Option {
-	return func(options *Options) {
-		if o.requestHead == nil {
-			o.requestHead = make(http.Header)
-		}
-		o.requestHead.Add(key, value)
-	}
-}
-
-func (o *Options) AuthorizationBearer(token string) Option {
-	return o.AddRequestHeader("Authorization", fmt.Sprintf("Bearer %s", token))
-}
-
-func (o *Options) AuthorizationBasic(username, password string) Option {
-	return o.AddRequestHeader("Authorization", fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString(fmt.Appendf(nil, "%s:%s", username, password))))
 }
