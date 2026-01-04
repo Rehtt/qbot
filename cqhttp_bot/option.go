@@ -23,6 +23,8 @@
 package cqhttp_bot
 
 import (
+	"encoding/base64"
+	"fmt"
 	"log/slog"
 	"net/http"
 )
@@ -47,6 +49,7 @@ func WithLogger(l *slog.Logger) Option {
 	}
 }
 
+// WithRequestHead 设置请求头，会覆盖默认请求头
 func WithRequestHead(h http.Header) Option {
 	return func(options *Options) {
 		options.requestHead = h.Clone()
@@ -66,4 +69,21 @@ func (o *Options) Log() *slog.Logger {
 		o.log = slog.Default()
 	}
 	return o.log
+}
+
+func (o *Options) AddRequestHeader(key, value string) Option {
+	return func(options *Options) {
+		if o.requestHead == nil {
+			o.requestHead = make(http.Header)
+		}
+		o.requestHead.Add(key, value)
+	}
+}
+
+func (o *Options) AuthorizationBearer(token string) Option {
+	return o.AddRequestHeader("Authorization", fmt.Sprintf("Bearer %s", token))
+}
+
+func (o *Options) AuthorizationBasic(username, password string) Option {
+	return o.AddRequestHeader("Authorization", fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString(fmt.Appendf(nil, "%s:%s", username, password))))
 }
